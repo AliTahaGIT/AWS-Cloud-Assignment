@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-
+#################################### ALI AHMED ABOUELSEOUD MOUSTAFA TAHA (TP069502) PARTS #########################################
 @app.post("/create-post")
 async def create_post(
     Post_Title: str = Form(...),
@@ -26,7 +26,7 @@ async def create_post(
         file_ext = image.filename.split('.')[-1]
         key = f"posts/{uuid4()}.{file_ext}"
 
-        s3.upload_fileobj(image.file, BUCKET, key, ExtraArgs={"ContentType": image.content_type})
+        s3.upload_fileobj(image.file, BUCKET, key, ExtraArgs={"ContentType": image.content_type, "ACL": "public-read"})
         image_url = f"https://{BUCKET}.s3.amazonaws.com/{key}"
 
         post_id = str(uuid4())
@@ -37,6 +37,7 @@ async def create_post(
             "Post_Title": Post_Title,
             "Post_Organization": Post_Organization,
             "Post_IMG": image_url,
+            "Post_S3Key": key,
             "Post_Desc": Post_Desc,
             "Post_CreateDate": timestamp
         })
@@ -46,3 +47,23 @@ async def create_post(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+
+@app.get("/posts")
+def get_posts():
+    try:
+        response = posts_table.scan()
+        items = response.get("Items", [])
+
+        # Sort items by Post_CreateDate descending (newest first)
+        sorted_items = sorted(
+            items,
+            key=lambda x: datetime.fromisoformat(x["Post_CreateDate"].split(".")[0]),
+            reverse=True
+        )
+
+        return sorted_items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+#####################################################################################################################################

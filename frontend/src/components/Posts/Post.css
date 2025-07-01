@@ -21,6 +21,13 @@
   color: #2b2b2b;
 }
 
+.post-organization {
+  font-size: 14px;
+  color: #777;
+  margin-top: -10px;
+  margin-bottom: 12px;
+}
+
 .image-wrapper {
   width: 100%;
   aspect-ratio: 3 / 2;

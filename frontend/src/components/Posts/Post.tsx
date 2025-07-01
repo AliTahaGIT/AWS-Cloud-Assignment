@@ -1,31 +1,43 @@
-import "./Post.css"
-import ThraggImage from '../../assets/thragg.avif'
-
+import "./Post.css";
 interface PostProps {
-  id: number
-  title: string
-  description: string
-  date: string
-  image: string
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  image: string;
+  organization: string;
+  S3Key: string;
 }
 
-function Post({ id, title, description, date, image }: PostProps) {
+function Post({
+  id,
+  title,
+  description,
+  date,
+  image,
+  organization,
+  S3Key,
+}: PostProps) {
   // Format the date to match your existing format
   const formatDate = (dateString: string) => {
     const options: Intl.DateTimeFormatOptions = {
       day: "numeric",
       month: "long",
       year: "numeric",
-    }
-    return new Date(dateString).toLocaleDateString("en-US", options)
-  }
+    };
+
+    // Ensure safe ISO string parsing by trimming if needed
+    const cleanDate = dateString.split(".")[0]; // Remove microseconds if present
+    return new Date(cleanDate).toLocaleDateString("en-US", options);
+  };
 
   return (
-    <div className="post-card">
+    <div className="post-card" id={id}>
       <h2 className="post-title">{title}</h2>
+      <p className="post-organization">{organization}</p>
       <div className="image-wrapper">
         <img
-          src={image || ThraggImage} // Use passed image or fallback to ThraggImage
+          src={image}
           alt={title}
           className="post-image"
         />
@@ -35,7 +47,7 @@ function Post({ id, title, description, date, image }: PostProps) {
         <p className="post-description">{description}</p>
       </div>
     </div>
-  )
+  );
 }
 
-export default Post
+export default Post;

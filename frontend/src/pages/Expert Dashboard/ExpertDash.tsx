@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import "./ExpertDash.css";
 
 interface BlogPost {
@@ -21,6 +22,8 @@ function ExpertDash() {
     image: null,
     description: "",
   });
+
+  const { name } = useParams<{ name: string }>();
 ////////////////////////////////////////////////////////////// CAPTURE DATA /////////////////////////////////////////////////////
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -46,14 +49,15 @@ const submitPostToServer = async () => {
     return;
   }
 
+  const orgName = name || "Unknown"; // fallback just in case
   const data = new FormData();
   data.append("Post_Title", formData.title);
-  data.append("Post_Organization", "MYFlood"); // Hardcoded or from login
+  data.append("Post_Organization", orgName); // From Login, But for Now Hard Coded
   data.append("Post_Desc", formData.description);
   data.append("image", formData.image);
 
   try {
-    const res = await fetch("http://127.0.0.1:8000/create-post", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/create-post`, {
       method: "POST",
       body: data,
     });
