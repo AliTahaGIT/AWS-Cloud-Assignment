@@ -11,6 +11,7 @@ interface BlogPost {
 }
 
 function ExpertDash() {
+  /////////////////////////////////////////////////// USE STATES ///////////////////////////////////////////////////////////////
   const [activeTab, setActiveTab] = useState<
     "add-post" | "my-posts" | "logout"
   >("add-post");
@@ -20,7 +21,7 @@ function ExpertDash() {
     image: null,
     description: "",
   });
-
+////////////////////////////////////////////////////////////// CAPTURE DATA /////////////////////////////////////////////////////
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -38,33 +39,51 @@ function ExpertDash() {
       image: file,
     }));
   };
+//////////////////////////////////////////////////////////// SEND DATA TO SERVER ///////////////////////////////////////////////////////
+const submitPostToServer = async () => {
+  if (!formData.image) {
+    alert("Please upload an image.");
+    return;
+  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Handle form submission here
-    alert("Blog post submitted successfully!");
+  const data = new FormData();
+  data.append("Post_Title", formData.title);
+  data.append("Post_Organization", "MYFlood"); // Hardcoded or from login
+  data.append("Post_Desc", formData.description);
+  data.append("image", formData.image);
 
-    // Reset form
-    setFormData({
-      title: "",
-      image: null,
-      description: "",
+  try {
+    const res = await fetch("http://127.0.0.1:8000/create-post", {
+      method: "POST",
+      body: data,
     });
 
-    // Reset file input
-    const fileInput = document.getElementById(
-      "image-upload"
-    ) as HTMLInputElement;
+    const result = await res.json();
+    if (res.ok) {
+      alert("Post created successfully!");
+    } else {
+      alert("Error: " + result.detail || "Something went wrong.");
+    }
+  } catch (err) {
+    alert("Network error: " + err);
+  }
+};
+//////////////////////////////////////////////////////////// Submit Data ///////////////////////////////////////////////////////////////
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await submitPostToServer();
+    setFormData({ title: "", image: null, description: "" });
+
+    const fileInput = document.getElementById("image-upload") as HTMLInputElement;
     if (fileInput) fileInput.value = "";
   };
-
+//////////////////////////////////////////////////////////// Logout ///////////////////////////////////////////////////////////////
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to logout?")) {
       window.location.href = "/";
     }
   };
-
+///////////////////////////////////////////////////////////// UI //////////////////////////////////////////////////////////////////
   const renderContent = () => {
     switch (activeTab) {
       case "add-post":
