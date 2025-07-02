@@ -1,8 +1,9 @@
-from fastapi import FastAPI, Form, UploadFile, File, HTTPException
+from fastapi import FastAPI, Form, UploadFile, File, HTTPException, Query, Path, Body
 from fastapi.middleware.cors import CORSMiddleware
 from db import posts_table, s3, BUCKET
 from uuid import uuid4
 from datetime import datetime
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -15,6 +16,13 @@ app.add_middleware(
 )
 
 #################################### ALI AHMED ABOUELSEOUD MOUSTAFA TAHA (TP069502) PARTS #########################################
+class UpdatePostModel(BaseModel):
+    Post_Title: str
+    Post_Desc: str
+
+
+
+
 @app.post("/create-post")
 async def create_post(
     Post_Title: str = Form(...),
@@ -49,7 +57,6 @@ async def create_post(
 
 
 
-
 @app.get("/posts")
 def get_posts():
     try:
@@ -66,4 +73,70 @@ def get_posts():
         return sorted_items
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@app.get("/org-posts")
+def get_posts(organization: str = Query(None)):
+    try:
+        response = posts_table.scan()
+        items = response.get("Items", [])
+
+        # If query param provided, filter it
+        if organization:
+            items = [item for item in items if item.get("Post_Organization") == organization]
+
+        # Sort newest to oldest
+        items.sort(key=lambda x: x.get("Post_CreateDate", ""), reverse=True)
+
+        return items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@app.put("/update-post/{post_id}")
+def update_post(
+    post_id: str = Path(...),
+    payload: dict = Body(...)
+    ):
+    try:
+        # Validate keys exist
+        title = payload.get("Post_Title")
+        desc = payload.get("Post_Desc")
+
+        if not title or not desc:
+            raise HTTPException(status_code=400, detail="Missing Post_Title or Post_Desc")
+
+        # Update in DynamoDB
+        response = posts_table.update_item(
+            Key={"Post_ID": post_id},
+            UpdateExpression="SET Post_Title = :t, Post_Desc = :d",
+            ExpressionAttributeValues={
+                ":t": title,
+                ":d": desc,
+            },
+            ReturnValues="UPDATED_NEW"
+        )
+        return {"message": "Post updated", "updated": response.get("Attributes")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@app.delete("/delete-post/{post_id}")
+def delete_post(post_id: str, s3key: str = Query(None)):
+    try:
+        # Delete from DynamoDB
+        posts_table.delete_item(Key={"Post_ID": post_id})
+
+        # Delete image from S3
+        if s3key:
+            s3.delete_object(Bucket=BUCKET, Key=s3key)
+
+        return {"message": "Post and image deleted successfully."}
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 #####################################################################################################################################
