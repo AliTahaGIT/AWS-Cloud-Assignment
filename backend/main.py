@@ -5,9 +5,9 @@ from uuid import uuid4
 from datetime import datetime
 from pydantic import BaseModel
 import re
-from werkzeug.security import generate_password_hash #For password hashing.
+from werkzeug.security import generate_password_hash, check_password_hash #For password hashing.
 from fastapi.responses import JSONResponse
-from fastapi import status, Form
+from fastapi import status
 from db import users_table #importing the users table from the database.
 app = FastAPI()
 
@@ -146,7 +146,7 @@ def delete_post(post_id: str, s3key: str = Query(None)):
 #####################################################################################################################################
 
 ##################################AHMED MOHAMED AHMED ABDELGADIR - TP070007 PART (SIGN UP)##########################
-
+#Registration function to handle user registration
 def registration(username: str, password: str, email: str) -> str:
     if not username or not password or not email:
         return "All fields are required."
@@ -190,3 +190,28 @@ def register_user(
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": result})
     else:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": result})
+#####################################################################################################################################
+#Login function to handle user login
+@app.post("/login")
+def login_user(
+    username: str = Form(...),
+    password: str = Form(...)
+):
+    try:
+        # Check if user exists in DynamoDB
+        response = users_table.get_item(Key={"username": username})
+        user = response.get("Item")
+
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials.")
+
+        # Compare password hash
+        if not check_password_hash(user["password"], password):
+            raise HTTPException(status_code=401, detail="Invalid credentials.")
+
+        # Login successful
+        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Login successful!"})
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+######################################################################################################################################
