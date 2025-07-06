@@ -198,7 +198,7 @@ def login_user(
     password: str = Form(...)
 ):
     try:
-        # Check if user exists in DynamoDB
+        # Check if user exists in Database
         response = users_table.get_item(Key={"username": username})
         user = response.get("Item")
 
