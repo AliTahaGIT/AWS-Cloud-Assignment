@@ -4,7 +4,11 @@ from db import posts_table, s3, BUCKET
 from uuid import uuid4
 from datetime import datetime
 from pydantic import BaseModel
-
+import re
+from werkzeug.security import generate_password_hash #For password hashing.
+from fastapi.responses import JSONResponse
+from fastapi import status, Form
+from db import users_table #importing the users table from the database.
 app = FastAPI()
 
 app.add_middleware(
@@ -140,3 +144,49 @@ def delete_post(post_id: str, s3key: str = Query(None)):
         raise HTTPException(status_code=500, detail=str(e))
 
 #####################################################################################################################################
+
+##################################AHMED MOHAMED AHMED ABDELGADIR - TP070007 PART (SIGN UP)##########################
+
+def registration(username: str, password: str, email: str) -> str:
+    if not username or not password or not email:
+        return "All fields are required."
+
+    if len(password) < 6:
+        return "Password must be at least 6 characters long."
+
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        return "Invalid email format."
+
+    # Check if user already exists in DynamoDB
+    try:
+        response = users_table.get_item(Key={"username": username})
+        if 'Item' in response:
+            return "Username already exists."
+    except Exception as e:
+        return f"Error checking existing user: {str(e)}"
+
+    # Hash password
+    hashed_password = generate_password_hash(password)
+
+    # Store in DynamoDB
+    try:
+        users_table.put_item(Item={
+            "username": username,
+            "email": email,
+            "password": hashed_password
+        })
+        return "Registration successful!"
+    except Exception as e:
+        return f"Error saving user: {str(e)}"
+@app.post("/register")
+def register_user(
+    username: str = Form(...),
+    password: str = Form(...),
+    email: str = Form(...)
+):
+    result = registration(username, password, email)
+
+    if result == "Registration successful!":
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": result})
+    else:
+        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": result})
