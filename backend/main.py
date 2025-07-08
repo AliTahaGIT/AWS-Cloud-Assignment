@@ -1,22 +1,20 @@
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException, Query, Path, Body
 from fastapi.middleware.cors import CORSMiddleware
-from db import posts_table, s3, BUCKET
+from db import posts_table, users_table, s3, BUCKET #importing database and AWS configs
 from uuid import uuid4
 from datetime import datetime
 from pydantic import BaseModel
-import re
 from werkzeug.security import generate_password_hash, check_password_hash #For password hashing.
 from fastapi.responses import JSONResponse
 from fastapi import status
-from db import users_table #importing the users table from the database.
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 #################################### ALI AHMED ABOUELSEOUD MOUSTAFA TAHA (TP069502) PARTS #########################################
@@ -145,73 +143,87 @@ def delete_post(post_id: str, s3key: str = Query(None)):
 
 #####################################################################################################################################
 
-##################################AHMED MOHAMED AHMED ABDELGADIR - TP070007 PART (SIGN UP)##########################
-#Registration function to handle user registration
-def registration(username: str, password: str, email: str) -> str:
-    if not username or not password or not email:
-        return "All fields are required."
+################################## AHMED MOHAMED AHMED ABDELGADIR - TP070007 PART (SIGN UP) #########################################
 
-    if len(password) < 6:
-        return "Password must be at least 6 characters long."
-
-    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        return "Invalid email format."
-
-    # Check if user already exists in DynamoDB
+# Registration function to handle user registration
+def registration(username: str, password: str, email: str, role: str) -> str:
+    # Check if email already exists in DynamoDB (email is partition key)
     try:
-        response = users_table.get_item(Key={"username": username})
+        response = users_table.get_item(Key={"email": email})
         if 'Item' in response:
-            return "Username already exists."
+            return "Email already registered."
     except Exception as e:
         return f"Error checking existing user: {str(e)}"
 
     # Hash password
     hashed_password = generate_password_hash(password)
 
-    # Store in DynamoDB
+    # Store in DynamoDB with empty S3 fields
     try:
         users_table.put_item(Item={
-            "username": username,
             "email": email,
-            "password": hashed_password
+            "username": username,
+            "password": hashed_password,
+            "role": role,
+            "S3_URL": None,
+            "S3_Key": None
         })
         return "Registration successful!"
     except Exception as e:
         return f"Error saving user: {str(e)}"
+
+
 @app.post("/register")
 def register_user(
     username: str = Form(...),
     password: str = Form(...),
-    email: str = Form(...)
+    email: str = Form(...),
+    role: str = Form(...) 
 ):
-    result = registration(username, password, email)
+    result = registration(username, password, email, role)
 
     if result == "Registration successful!":
         return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": result})
     else:
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": result})
+
+
 #####################################################################################################################################
-#Login function to handle user login
+
 @app.post("/login")
 def login_user(
-    username: str = Form(...),
-    password: str = Form(...)
+    email: str = Form(...),
+    password: str = Form(...),
+    role: str = Form(...)
 ):
     try:
-        # Check if user exists in Database
-        response = users_table.get_item(Key={"username": username})
+        # Get user by email (email is partition key)
+        response = users_table.get_item(Key={"email": email})
         user = response.get("Item")
 
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials.")
 
-        # Compare password hash
+        # Check password
         if not check_password_hash(user["password"], password):
             raise HTTPException(status_code=401, detail="Invalid credentials.")
 
-        # Login successful
-        return JSONResponse(status_code=status.HTTP_200_OK, content={"message": "Login successful!"})
+        # Check role match
+        if user.get("role") != role:
+            raise HTTPException(status_code=401, detail="Invalid role.")
+
+        # Success
+        return JSONResponse(
+            status_code=status.HTTP_200_OK,
+            content={
+                "message": "Login successful!",
+                "fullName": user["username"],
+                "email": user["email"]
+            }
+        )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
 ######################################################################################################################################

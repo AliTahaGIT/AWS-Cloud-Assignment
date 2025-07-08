@@ -1,0 +1,189 @@
+.about-container {
+  max-width: 700px;
+  margin: 40px auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 32px 24px;
+  font-family: Arial, sans-serif;
+}
+
+.about-container h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 32px;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.divider {
+  margin: 28px 0 18px 0;
+  border: none;
+  border-top: 2px solid #e0e0e0;
+}
+
+.divider:first-of-type {
+  margin: 18px 0 28px 0;
+}
+
+.description {
+  font-size: 1.08em;
+  color: #444;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  text-align: justify;
+}
+
+.mission-title {
+  text-align: center;
+  color: #2a4d69;
+  margin-bottom: 12px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.mission-description {
+  font-size: 1.08em;
+  color: #444;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.members-title {
+  text-align: center;
+  color: #2a4d69;
+  margin-bottom: 24px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.members {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+}
+
+.member {
+  background: #f0f4fa;
+  border-radius: 8px;
+  padding: 20px 28px;
+  min-width: 220px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.member:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.member-name {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #2a4d69;
+  margin-bottom: 6px;
+}
+
+.member-role {
+  color: #4f6d7a;
+  font-size: 0.95em;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .about-container {
+    margin: 20px;
+    padding: 24px 20px;
+  }
+
+  .about-container h1 {
+    font-size: 1.75rem;
+    margin-bottom: 24px;
+  }
+
+  .mission-title,
+  .members-title {
+    font-size: 1.3rem;
+  }
+
+  .description,
+  .mission-description {
+    font-size: 1rem;
+    text-align: left;
+  }
+
+  .members {
+    gap: 16px;
+  }
+
+  .member {
+    min-width: 180px;
+    padding: 16px 20px;
+  }
+
+  .member-name {
+    font-size: 1.1em;
+  }
+
+  .member-role {
+    font-size: 0.9em;
+  }
+}
+
+@media (max-width: 480px) {
+  .about-container {
+    margin: 10px;
+    padding: 20px 16px;
+  }
+
+  .about-container h1 {
+    font-size: 1.5rem;
+  }
+
+  .mission-title,
+  .members-title {
+    font-size: 1.2rem;
+  }
+
+  .description,
+  .mission-description {
+    font-size: 0.95em;
+    line-height: 1.6;
+  }
+
+  .members {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .member {
+    width: 100%;
+    max-width: 280px;
+    min-width: auto;
+  }
+}
+
+/* Animation for smooth appearance */
+.about-container {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Focus styles for accessibility */
+.member:focus {
+  outline: 2px solid #2a4d69;
+  outline-offset: 2px;
+}

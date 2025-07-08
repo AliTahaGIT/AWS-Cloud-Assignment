@@ -35,6 +35,11 @@ function ExpertDash() {
 
   // Fetch posts when "my-posts" tab is opened
   useEffect(() => {
+    if(!localStorage.getItem('expertFullName')){
+      window.location.href = "/";
+      return;
+    }
+
     const fetchOrgPosts = async () => {
       if (activeTab === "my-posts") {
         try {
@@ -173,6 +178,7 @@ function ExpertDash() {
 
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to logout?")) {
+      localStorage.clear();
       window.location.href = "/"
     }
   }

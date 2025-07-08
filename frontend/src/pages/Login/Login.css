@@ -1,0 +1,353 @@
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+}
+
+.login-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  padding: 3rem 2.5rem;
+  width: 100%;
+  max-width: 450px;
+  animation: slideInUp 0.6s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-header h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin-bottom: 0.5rem;
+}
+
+.login-header p {
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+.form-toggle {
+  display: flex;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 0.25rem;
+  margin-bottom: 2rem;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #6c757d;
+}
+
+.toggle-btn.active {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+.toggle-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.label-icon {
+  width: 18px;
+  height: 18px;
+  color: #007bff;
+}
+
+.form-input,
+.form-select {
+  padding: 1rem 1.25rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+}
+
+.form-input:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
+  background: white;
+}
+
+.form-input:disabled,
+.form-select:disabled {
+  background-color: #f8f9fa;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.form-input.error {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-right: 3rem;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-input {
+  padding-right: 3rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+}
+
+.password-toggle:hover:not(:disabled) {
+  color: #007bff;
+}
+
+.password-toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.submit-button {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  padding: 1.25rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+}
+
+.submit-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-button.disabled,
+.submit-button:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.submit-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.auth-footer p {
+  color: #6c757d;
+  font-size: 0.95rem;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+  padding: 0;
+}
+
+.link-button:hover:not(:disabled) {
+  color: #0056b3;
+}
+
+.link-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .login-card {
+    padding: 2rem 1.5rem;
+    max-width: 400px;
+  }
+
+  .login-header h1 {
+    font-size: 2rem;
+  }
+
+  .form-input,
+  .form-select {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  .password-input-wrapper .form-input {
+    padding-right: 2.75rem;
+  }
+
+  .password-toggle {
+    right: 0.75rem;
+  }
+
+  .submit-button {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.5rem 1rem;
+    margin: 0.5rem;
+  }
+
+  .login-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .form-input,
+  .form-select {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .submit-button {
+    padding: 0.875rem 1rem;
+    font-size: 0.95rem;
+  }
+}
+
+/* Focus styles for accessibility */
+.form-input:focus,
+.form-select:focus,
+.submit-button:focus,
+.toggle-btn:focus,
+.password-toggle:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Hover effects for better UX */
+.form-input:hover:not(:disabled),
+.form-select:hover:not(:disabled) {
+  border-color: #007bff;
+}

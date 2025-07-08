@@ -1,16 +1,16 @@
-"use client"
+"use client";
 ///////////// DONE BY ALI AHMED ABOUELSEOUD MOUSTAFA TAHA (TP069502) //////////////////////////////
 
-
-import { useState } from "react"
-import "./Navbar.css"
+import { useState } from "react";
+import "./Navbar.css";
 
 function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isUserLogged = localStorage.getItem("userFullName");
 
   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   return (
     <nav className="navbar">
@@ -24,14 +24,28 @@ function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="navbar-menu">
-          <a href="/about" className="navbar-link">
-            About us
+          <a href="/about-us" className="navbar-link">
+            About
           </a>
-          <a href="/guide" className="navbar-link">
-            Guide
-          </a>
-          <a href="/login" className="navbar-login-btn">
-            Login
+          {isUserLogged && (
+            <a href="/user-dashboard" className="navbar-link">
+              Dashboard
+            </a>
+          )}
+          <a
+            href='/login'
+            className="navbar-mobile-login"
+            onClick={(e) => {
+              toggleMenu();
+
+              if (isUserLogged) {
+                e.preventDefault(); // prevent navigation for logout
+                localStorage.clear(); 
+                window.location.href = "/login"; 
+              }
+            }}
+          >
+            {isUserLogged ? "Logout" : "Login"}
           </a>
         </div>
 
@@ -47,16 +61,30 @@ function Navbar() {
           <a href="/about" className="navbar-mobile-link" onClick={toggleMenu}>
             About us
           </a>
-          <a href="/guide" className="navbar-mobile-link" onClick={toggleMenu}>
-            Guide
-          </a>
-          <a href="/login" className="navbar-mobile-login" onClick={toggleMenu}>
-            Login
+          {isUserLogged && (
+            <a href="/user-dashboard" className="navbar-link">
+              Dashboard
+            </a>
+          )}
+          <a
+            href='/login'
+            className="navbar-mobile-login"
+            onClick={(e) => {
+              toggleMenu();
+
+              if (isUserLogged) {
+                e.preventDefault(); // prevent navigation for logout
+                localStorage.clear(); 
+                window.location.href = "/login"; 
+              }
+            }}
+          >
+            {isUserLogged ? "Logout" : "Login"}
           </a>
         </div>
       </div>
     </nav>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;
