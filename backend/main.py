@@ -150,8 +150,10 @@ def submit_request(
 ):
     try:
         timestamp = datetime.utcnow().isoformat()
+        request_id = str(uuid4())
 
         requests_table.put_item(Item={
+            "request_id": request_id,
             "user_email": user_email,
             "user_name": user_name,
             "req_type": req_type,
@@ -292,7 +294,7 @@ async def update_user_profile(
             if old_key:
                 s3.delete_object(Bucket=BUCKET, Key=old_key)
 
-            # ✅ Upload new avatar
+            # Upload new avatar
             file_ext = avatar.filename.split('.')[-1]
             key = f"avatars/{uuid4()}.{file_ext}"
             s3.upload_fileobj(avatar.file, BUCKET, key, ExtraArgs={"ACL": "public-read", "ContentType": avatar.content_type})
@@ -312,7 +314,6 @@ async def update_user_profile(
 
         return {
             "message": "Profile updated successfully!",
-            "newImageURL": new_avatar_url  # Optional: frontend can update preview/localStorage
         }
 
     except Exception as e:
