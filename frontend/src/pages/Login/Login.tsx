@@ -4,6 +4,9 @@ import type React from "react";
 import { useState } from "react";
 import "./Login.css";
 
+///////////// DONE BY AHMED MOHAMED AHMED ABDELGADIR (TP070007) //////////////////////////////
+
+
 interface LoginData {
   role: string;
   email: string;
@@ -84,10 +87,14 @@ function Login() {
 
         const fullName = result.fullName;
         const email = result.email;
+        const img = result.s3_url;
+
+        console.log(img)
 
         if (loginData.role === "user") {
           localStorage.setItem("userEmail", email);
           localStorage.setItem("userFullName", fullName);
+          localStorage.setItem("userIMG", img);
           window.location.href = `/`;
         } else {
           localStorage.setItem("expertFullName", fullName);

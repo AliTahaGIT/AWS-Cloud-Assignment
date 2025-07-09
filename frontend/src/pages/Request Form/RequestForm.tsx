@@ -1,13 +1,16 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import "./RequestForm.css"
+import type React from "react";
+import { useState, useEffect } from "react";
+import "./RequestForm.css";
+
+///////////// DONE BY ALI AHMED ABOUELSEOUD MOUSTAFA TAHA (TP069502) //////////////////////////////
+
 
 interface FormData {
-  region: string
-  details: string
-  type: string
+  region: string;
+  details: string;
+  type: string;
 }
 
 function RequestForm() {
@@ -15,9 +18,11 @@ function RequestForm() {
     region: "",
     details: "",
     type: "",
-  })
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const user_email = localStorage.getItem("userEmail");
+  const user_name = localStorage.getItem("userFullName");
 
   const regions = [
     { value: "", label: "Select a region" },
@@ -25,48 +30,74 @@ function RequestForm() {
     { value: "south", label: "South" },
     { value: "east", label: "East" },
     { value: "west", label: "West" },
-  ]
+  ];
 
   const types = [
     { value: "", label: "Select request type" },
     { value: "help", label: "Help" },
     { value: "report", label: "Report" },
-  ]
+  ];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
-////////////////////////////////////////////////////////////// SUBMIT REQUEST //////////////////////////////////////////////////
+    }));
+  };
+
+  useEffect(() => {
+      if(!user_email){
+        window.location.href = "/";
+        return;
+      }
+    }, [user_email])
+  ////////////////////////////////////////////////////////////// SUBMIT REQUEST //////////////////////////////////////////////////
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    if (!user_email || !user_name) {
+      alert("User is not logged in. Please log in again.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const form = new FormData();
+      form.append("user_email", user_email);
+      form.append("user_name", user_name);
+      form.append("req_type", formData.type);
+      form.append("req_details", formData.details);
+      form.append("req_region", formData.region);
 
-      console.log("Form submitted:", formData)
-      alert("Request submitted successfully!")
+      const response = await fetch("http://localhost:8000/submit-request", {
+        method: "POST",
+        body: form,
+      });
 
-      // Reset form
-      setFormData({
-        region: "",
-        details: "",
-        type: "",
-      })
+      const result = await response.json();
+
+      if (response.ok) {
+        alert("Request submitted successfully!");
+        setFormData({ region: "", details: "", type: "" });
+      } else {
+        alert(result.detail || "Submission failed. Please try again.");
+      }
     } catch (error) {
-      console.error("Error submitting form:", error)
-      alert("Error submitting request. Please try again.")
+      console.error("Error submitting form:", error);
+      alert("Error submitting request. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  const isFormValid = formData.region && formData.details.trim() && formData.type
+  };
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const isFormValid =
+    formData.region && formData.details.trim() && formData.type;
 
   return (
     <div className="request-form-container">
@@ -79,14 +110,24 @@ function RequestForm() {
         {/* Region Field */}
         <div className="form-group">
           <label htmlFor="region" className="form-label">
-            <svg className="label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="label-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
                 d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
               />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
             </svg>
             Region *
           </label>
@@ -110,7 +151,12 @@ function RequestForm() {
         {/* Type Field */}
         <div className="form-group">
           <label htmlFor="type" className="form-label">
-            <svg className="label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="label-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -140,8 +186,18 @@ function RequestForm() {
         {/* Details Field */}
         <div className="form-group">
           <label htmlFor="details" className="form-label">
-            <svg className="label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+            <svg
+              className="label-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h7"
+              />
             </svg>
             Details *
           </label>
@@ -154,15 +210,17 @@ function RequestForm() {
               formData.type === "help"
                 ? "Describe the help you need..."
                 : formData.type === "report"
-                  ? "Describe the incident you're reporting..."
-                  : "Provide detailed information about your request..."
+                ? "Describe the incident you're reporting..."
+                : "Provide detailed information about your request..."
             }
             className="form-textarea"
             rows={6}
             required
             disabled={isSubmitting}
           />
-          <div className="character-count">{formData.details.length}/500 characters</div>
+          <div className="character-count">
+            {formData.details.length}/500 characters
+          </div>
         </div>
 
         {/* Submit Button */}
@@ -178,7 +236,12 @@ function RequestForm() {
             </>
           ) : (
             <>
-              <svg className="submit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="submit-icon"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -194,7 +257,12 @@ function RequestForm() {
         {/* Form Info */}
         <div className="form-info">
           <p>
-            <svg className="info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="info-icon"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -207,7 +275,7 @@ function RequestForm() {
         </div>
       </form>
     </div>
-  )
+  );
 }
 
-export default RequestForm
+export default RequestForm;

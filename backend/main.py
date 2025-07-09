@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Form, UploadFile, File, HTTPException, Query, Path, Body
 from fastapi.middleware.cors import CORSMiddleware
-from db import posts_table, users_table, s3, BUCKET #importing database and AWS configs
+from db import posts_table, users_table, requests_table, s3, BUCKET #importing database and AWS configs
 from uuid import uuid4
 from datetime import datetime
 from pydantic import BaseModel
@@ -21,8 +21,6 @@ app.add_middleware(
 class UpdatePostModel(BaseModel):
     Post_Title: str
     Post_Desc: str
-
-
 
 
 @app.post("/create-post")
@@ -141,9 +139,34 @@ def delete_post(post_id: str, s3key: str = Query(None)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.post("/submit-request")
+def submit_request(
+    user_email: str = Form(...),
+    user_name: str = Form(...),
+    req_type: str = Form(...),
+    req_details: str = Form(...),
+    req_region: str = Form(...)
+):
+    try:
+        timestamp = datetime.utcnow().isoformat()
+
+        requests_table.put_item(Item={
+            "user_email": user_email,
+            "user_name": user_name,
+            "req_type": req_type,
+            "req_details": req_details,
+            "req_region": req_region,
+            "created_at": timestamp
+        })
+
+        return {"message": "Request submitted successfully!"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 #####################################################################################################################################
 
-################################## AHMED MOHAMED AHMED ABDELGADIR - TP070007 PART (SIGN UP) #########################################
+################################## AHMED MOHAMED AHMED ABDELGADIR - TP070007 PARTS #################################################
 
 # Registration function to handle user registration
 def registration(username: str, password: str, email: str, role: str) -> str:
@@ -188,8 +211,6 @@ def register_user(
         return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": result})
 
 
-#####################################################################################################################################
-
 @app.post("/login")
 def login_user(
     email: str = Form(...),
@@ -218,12 +239,85 @@ def login_user(
             content={
                 "message": "Login successful!",
                 "fullName": user["username"],
-                "email": user["email"]
+                "email": user["email"],
+                "s3_url": user["S3_URL"]
             }
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+######################################################################################################################################
+
+#################################################### ABDUZAFAR MADRAIMOV (TP065584) PARTS ############################################
+
+@app.get("/user-requests")
+def get_user_requests(email: str = Query(...)):
+    try:
+        response = requests_table.scan()
+        all_items = response.get("Items", [])
+
+        # Filter by email
+        user_items = [item for item in all_items if item.get("user_email") == email]
+
+        return user_items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@app.put("/update-user-profile")
+async def update_user_profile(
+    email: str = Form(...),
+    fullName: str = Form(...),
+    avatar: UploadFile = File(None)  # Optional avatar
+):
+    try:
+        # Fetch existing user
+        response = users_table.get_item(Key={"email": email})
+        user = response.get("Item")
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+        update_expr = "SET username = :name"
+        expr_values = {":name": fullName}
+
+        new_avatar_url = None
+
+        # If a new avatar is uploaded
+        if avatar:
+            # DELETE the old S3 avatar (if exists)
+            old_key = user.get("S3_Key")
+            if old_key:
+                s3.delete_object(Bucket=BUCKET, Key=old_key)
+
+            # ✅ Upload new avatar
+            file_ext = avatar.filename.split('.')[-1]
+            key = f"avatars/{uuid4()}.{file_ext}"
+            s3.upload_fileobj(avatar.file, BUCKET, key, ExtraArgs={"ACL": "public-read", "ContentType": avatar.content_type})
+            avatar_url = f"https://{BUCKET}.s3.amazonaws.com/{key}"
+            new_avatar_url = avatar_url
+
+            update_expr += ", S3_URL = :url, S3_Key = :key"
+            expr_values[":url"] = avatar_url
+            expr_values[":key"] = key
+
+        # Update in DynamoDB
+        users_table.update_item(
+            Key={"email": email},
+            UpdateExpression=update_expr,
+            ExpressionAttributeValues=expr_values
+        )
+
+        return {
+            "message": "Profile updated successfully!",
+            "newImageURL": new_avatar_url  # Optional: frontend can update preview/localStorage
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 ######################################################################################################################################

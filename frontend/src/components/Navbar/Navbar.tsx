@@ -28,7 +28,7 @@ function Navbar() {
             About
           </a>
           {isUserLogged && (
-            <a href="/user-dashboard" className="navbar-link">
+            <a href="/UserDash" className="navbar-link">
               Dashboard
             </a>
           )}

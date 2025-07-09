@@ -7,6 +7,8 @@ import MainPage from "./pages/Main Page/MainPage"
 import AboutUs from "./pages/About Us/AboutUs"
 import RequestForm from "./pages/Request Form/RequestForm"
 import Login from "./pages/Login/Login"
+import UserSettings from "./pages/User Settings Page/UserSettings"
+import UserDash from "./pages/User Dashboard/UserDash"
 
 // Components
 function Home() {
@@ -45,6 +47,24 @@ function LogIN(){
   )
 }
 
+function Usersettings(){
+  return (
+    <>
+    <Navbar />
+    <UserSettings/>
+    </>
+  )
+}
+
+function Userdash(){
+  return (
+    <>
+    <Navbar />
+    <UserDash/>
+    </>
+  )
+}
+
 
 function App() {
   return (
@@ -55,6 +75,8 @@ function App() {
         <Route path="/about-us" element={<Aboutus />} />
         <Route path="/RequestForm" element={<ReqForm />} />
         <Route path="/login" element={<LogIN />} />
+        <Route path="/UserSettings" element={<Usersettings />} />
+        <Route path="/UserDash" element={<Userdash />} />
 
         {/* Expert Dashboard route with name parameter */}
         <Route path="/ExpertDash/:name" element={<ExpertDash />} />

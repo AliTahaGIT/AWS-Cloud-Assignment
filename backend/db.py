@@ -15,5 +15,6 @@ session = boto3.Session(
 
 dynamodb = session.resource('dynamodb')
 s3 = session.client('s3')
-posts_table = dynamodb.Table("Posts") # Table for storing BLog Posts - Ali 
-users_table = dynamodb.Table("Users") # Table for storing user credentials (username/pw/email) - Ahmed
+posts_table = dynamodb.Table("Posts") # Table for Blog Posts - Ali 
+users_table = dynamodb.Table("Users") # Table for User credentials - Ahmed
+requests_table = dynamodb.Table("Requests") # Table for User Requests - Abduzafar & Ali
