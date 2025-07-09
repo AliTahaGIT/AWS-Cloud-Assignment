@@ -10,40 +10,7 @@ from uuid import uuid4
 
 router = APIRouter()
 
-# Registration function to handle user registration
-def registration(username: str, password: str, email: str, role: str) -> str:
-    # Scan to check if email already exists
-    try:
-        response = users_table.scan(
-            FilterExpression="email = :email",
-            ExpressionAttributeValues={":email": email}
-        )
-        if response.get("Items"):
-            return "Email already registered."
-    except Exception as e:
-        return f"Error checking existing user: {str(e)}"
-
-    # Hash password
-    hashed_password = generate_password_hash(password)
-    user_id = str(uuid4())
-
-    # Store in DynamoDB with user_id as primary key
-    try:
-        users_table.put_item(Item={
-            "user_id": user_id,
-            "email": email,
-            "username": username,
-            "password": hashed_password,
-            "role": role,
-            "S3_URL": None,
-            "S3_Key": None
-        })
-        return "Registration successful!"
-    except Exception as e:
-        return f"Error saving user: {str(e)}"
-
-
-@router.post("/register")
+@app.post("/register")
 def register_user(
     username: str = Form(...),
     password: str = Form(...),
@@ -65,7 +32,7 @@ def register_user(
 
         # Insert new user
         users_table.put_item(Item={
-            "user_id": user_id,
+            "user_id": user_id,      
             "email": email,
             "username": username,
             "password": hashed_password,
