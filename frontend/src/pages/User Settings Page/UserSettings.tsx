@@ -10,14 +10,17 @@ import "./UserSettings.css"
 interface UserData {
   fullName: string
   email: string
+  user_id: string
   avatar: File | null
 }
 
 function UserSettings() {
   const user_email = localStorage.getItem("userEmail");
+  
   const [userData, setUserData] = useState<UserData>({
     fullName: localStorage.getItem("userFullName") || "",
     email: user_email || "",
+    user_id: localStorage.getItem("userID") || '',
     avatar: null
   })
 
@@ -99,6 +102,7 @@ function UserSettings() {
       const formData = new FormData()
       formData.append("fullName", userData.fullName)
       formData.append("email", userData.email)
+      formData.append("user_id", userData.user_id);
       if (userData.avatar) {
         formData.append("avatar", userData.avatar)
       }

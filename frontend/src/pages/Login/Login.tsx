@@ -88,6 +88,7 @@ function Login() {
         const fullName = result.fullName;
         const email = result.email;
         const img = result.s3_url;
+        const userID = result.user_id;
 
         console.log(img)
 
@@ -95,6 +96,7 @@ function Login() {
           localStorage.setItem("userEmail", email);
           localStorage.setItem("userFullName", fullName);
           localStorage.setItem("userIMG", img);
+          localStorage.setItem("userID", userID);
           window.location.href = `/`;
         } else {
           localStorage.setItem("expertFullName", fullName);

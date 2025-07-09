@@ -169,23 +169,29 @@ def submit_request(
 #####################################################################################################################################
 
 ################################## AHMED MOHAMED AHMED ABDELGADIR - TP070007 PARTS #################################################
-
-# Registration function to handle user registration
-def registration(username: str, password: str, email: str, role: str) -> str:
-    # Check if email already exists in DynamoDB (email is partition key)
+@app.post("/register")
+def register_user(
+    username: str = Form(...),
+    password: str = Form(...),
+    email: str = Form(...),
+    role: str = Form(...)
+):
     try:
-        response = users_table.get_item(Key={"email": email})
-        if 'Item' in response:
-            return "Email already registered."
-    except Exception as e:
-        return f"Error checking existing user: {str(e)}"
+        # Scan to check if email already exists
+        response = users_table.scan(
+            FilterExpression="email = :email",
+            ExpressionAttributeValues={":email": email}
+        )
+        if response.get("Items"):
+            return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": "Email already registered."})
 
-    # Hash password
-    hashed_password = generate_password_hash(password)
+        # Hash the password
+        hashed_password = generate_password_hash(password)
+        user_id = str(uuid4())
 
-    # Store in DynamoDB with empty S3 fields
-    try:
+        # Insert new user
         users_table.put_item(Item={
+            "user_id": user_id,      
             "email": email,
             "username": username,
             "password": hashed_password,
@@ -193,24 +199,11 @@ def registration(username: str, password: str, email: str, role: str) -> str:
             "S3_URL": None,
             "S3_Key": None
         })
-        return "Registration successful!"
+
+        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": "Registration successful!"})
+
     except Exception as e:
-        return f"Error saving user: {str(e)}"
-
-
-@app.post("/register")
-def register_user(
-    username: str = Form(...),
-    password: str = Form(...),
-    email: str = Form(...),
-    role: str = Form(...) 
-):
-    result = registration(username, password, email, role)
-
-    if result == "Registration successful!":
-        return JSONResponse(status_code=status.HTTP_201_CREATED, content={"message": result})
-    else:
-        return JSONResponse(status_code=status.HTTP_400_BAD_REQUEST, content={"error": result})
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 
 @app.post("/login")
@@ -220,12 +213,16 @@ def login_user(
     role: str = Form(...)
 ):
     try:
-        # Get user by email (email is partition key)
-        response = users_table.get_item(Key={"email": email})
-        user = response.get("Item")
-
-        if not user:
+        # Scan to find user by email
+        response = users_table.scan(
+            FilterExpression="email = :email",
+            ExpressionAttributeValues={":email": email}
+        )
+        items = response.get("Items", [])
+        if not items:
             raise HTTPException(status_code=401, detail="Invalid credentials.")
+
+        user = items[0]
 
         # Check password
         if not check_password_hash(user["password"], password):
@@ -235,19 +232,20 @@ def login_user(
         if user.get("role") != role:
             raise HTTPException(status_code=401, detail="Invalid role.")
 
-        # Success
         return JSONResponse(
             status_code=status.HTTP_200_OK,
             content={
                 "message": "Login successful!",
+                "user_id": user["user_id"],
                 "fullName": user["username"],
                 "email": user["email"],
-                "s3_url": user["S3_URL"]
+                "s3_url": user.get("S3_URL")
             }
         )
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 ######################################################################################################################################
@@ -268,56 +266,70 @@ def get_user_requests(email: str = Query(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
 @app.put("/update-user-profile")
 async def update_user_profile(
+    user_id: str = Form(...),
     email: str = Form(...),
     fullName: str = Form(...),
-    avatar: UploadFile = File(None)  # Optional avatar
+    avatar: UploadFile = File(None)
 ):
     try:
-        # Fetch existing user
-        response = users_table.get_item(Key={"email": email})
+        # Fetch current user by user_id
+        response = users_table.get_item(Key={"user_id": user_id})
         user = response.get("Item")
         if not user:
             raise HTTPException(status_code=404, detail="User not found.")
 
-        update_expr = "SET username = :name"
-        expr_values = {":name": fullName}
+        # If email is changing, check that the new email is not already taken by another user
+        if email != user["email"]:
+            existing = users_table.scan(
+                FilterExpression="email = :email",
+                ExpressionAttributeValues={":email": email}
+            )
+            if existing.get("Items"):
+                raise HTTPException(status_code=400, detail="Email already in use by another account.")
 
-        new_avatar_url = None
+        update_expr = "SET username = :name, email = :email"
+        expr_values = {
+            ":name": fullName,
+            ":email": email
+        }
 
-        # If a new avatar is uploaded
+        # Handle avatar replacement
         if avatar:
-            # DELETE the old S3 avatar (if exists)
+            # Delete old avatar if exists
             old_key = user.get("S3_Key")
             if old_key:
                 s3.delete_object(Bucket=BUCKET, Key=old_key)
 
-            # Upload new avatar
             file_ext = avatar.filename.split('.')[-1]
             key = f"avatars/{uuid4()}.{file_ext}"
-            s3.upload_fileobj(avatar.file, BUCKET, key, ExtraArgs={"ACL": "public-read", "ContentType": avatar.content_type})
+            s3.upload_fileobj(
+                avatar.file,
+                BUCKET,
+                key,
+                ExtraArgs={"ACL": "public-read", "ContentType": avatar.content_type}
+            )
             avatar_url = f"https://{BUCKET}.s3.amazonaws.com/{key}"
-            new_avatar_url = avatar_url
 
             update_expr += ", S3_URL = :url, S3_Key = :key"
             expr_values[":url"] = avatar_url
             expr_values[":key"] = key
 
-        # Update in DynamoDB
+        # Update the user item by user_id
         users_table.update_item(
-            Key={"email": email},
+            Key={"user_id": user_id},
             UpdateExpression=update_expr,
             ExpressionAttributeValues=expr_values
         )
 
         return {
-            "message": "Profile updated successfully!",
+            "message": "Profile updated successfully!"
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 
