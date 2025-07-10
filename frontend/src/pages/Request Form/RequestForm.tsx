@@ -25,11 +25,23 @@ function RequestForm() {
   const user_name = localStorage.getItem("userFullName");
 
   const regions = [
-    { value: "", label: "Select a region" },
-    { value: "north", label: "North" },
-    { value: "south", label: "South" },
-    { value: "east", label: "East" },
-    { value: "west", label: "West" },
+    { value: "", label: "Select a state" },
+    { value: "johor", label: "Johor" },
+    { value: "kedah", label: "Kedah" },
+    { value: "kelantan", label: "Kelantan" },
+    { value: "kuala_lumpur", label: "Kuala Lumpur" },
+    { value: "labuan", label: "Labuan" },
+    { value: "malacca", label: "Malacca" },
+    { value: "negeri_sembilan", label: "Negeri Sembilan" },
+    { value: "pahang", label: "Pahang" },
+    { value: "penang", label: "Penang" },
+    { value: "perak", label: "Perak" },
+    { value: "perlis", label: "Perlis" },
+    { value: "putrajaya", label: "Putrajaya" },
+    { value: "sabah", label: "Sabah" },
+    { value: "sarawak", label: "Sarawak" },
+    { value: "selangor", label: "Selangor" },
+    { value: "terengganu", label: "Terengganu" },
   ];
 
   const types = [
