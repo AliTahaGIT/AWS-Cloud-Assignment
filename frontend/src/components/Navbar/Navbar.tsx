@@ -18,7 +18,6 @@ function Navbar() {
         {/* Logo/Brand */}
         <div className="navbar-brand">
           <a href="/" className="brand-link">
-            <div className="brand-icon">C60</div>
             <span>Cloud60</span>
           </a>
         </div>

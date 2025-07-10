@@ -11,12 +11,10 @@ from uuid import uuid4
 import bcrypt
 from boto3.dynamodb.conditions import Attr
 from fastapi import APIRouter, HTTPException, Query, Path, Body, Depends
-from app.db import notifications_table, contacts_table, users_table, requests_table, posts_table
+from app.db import notifications_table, users_table, requests_table, posts_table, dynamodb
 from app.models.schemas import (
     FloodNotificationCreate,
-    FloodNotificationUpdate,
-    EmergencyContactCreate,
-    EmergencyContactUpdate
+    FloodNotificationUpdate
 )
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
@@ -221,121 +219,6 @@ async def delete_flood_notification(
         raise HTTPException(status_code=500, detail=f"Error deleting notification: {str(e)}")
 
 
-@router.post("/emergency-contacts")
-async def create_emergency_contact(
-    contact: EmergencyContactCreate,
-    admin_verified: bool = Depends(verify_admin)
-):
-    try:
-        contact_id = str(uuid4())
-        timestamp = datetime.utcnow().isoformat()
-        
-        item = {
-            "contact_id": contact_id,
-            "name": contact.name,
-            "role": contact.role,
-            "phone": contact.phone,
-            "email": contact.email,
-            "region": contact.region,
-            "is_active": contact.is_active,
-            "created_at": timestamp,
-            "updated_at": timestamp
-        }
-        
-        contacts_table.put_item(Item=item)
-        
-        return {
-            "message": "Emergency contact created successfully",
-            "contact_id": contact_id,
-            "data": item
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error creating contact: {str(e)}")
-
-@router.get("/emergency-contacts")
-async def get_emergency_contacts(
-    region: Optional[str] = Query(None),
-    active_only: bool = Query(True),
-    admin_verified: bool = Depends(verify_admin)
-):
-    try:
-        if active_only:
-            response = contacts_table.scan(
-                FilterExpression=Attr('is_active').eq(True)
-            )
-        else:
-            response = contacts_table.scan()
-        
-        contacts = response.get("Items", [])
-        
-        if region:
-            contacts = [c for c in contacts if c.get('region') == region]
-        
-        return {
-            "count": len(contacts),
-            "contacts": contacts
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching contacts: {str(e)}")
-
-@router.put("/emergency-contacts/{contact_id}")
-async def update_emergency_contact(
-    contact_id: str = Path(...),
-    contact_update: EmergencyContactUpdate = Body(...),
-    admin_verified: bool = Depends(verify_admin)
-):
-    try:
-        # Check if contact exists
-        response = contacts_table.get_item(Key={"contact_id": contact_id})
-        
-        if "Item" not in response:
-            raise HTTPException(status_code=404, detail="Contact not found")
-        
-        # Build update expression
-        update_expression = "SET updated_at = :timestamp"
-        expression_values = {":timestamp": datetime.utcnow().isoformat()}
-        
-        for field, value in contact_update.dict(exclude_none=True).items():
-            update_expression += f", {field} = :{field}"
-            expression_values[f":{field}"] = value
-        
-        contacts_table.update_item(
-            Key={"contact_id": contact_id},
-            UpdateExpression=update_expression,
-            ExpressionAttributeValues=expression_values
-        )
-        
-        updated_response = contacts_table.get_item(Key={"contact_id": contact_id})
-        
-        return {
-            "message": "Contact updated successfully",
-            "data": updated_response["Item"]
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error updating contact: {str(e)}")
-
-@router.delete("/emergency-contacts/{contact_id}")
-async def delete_emergency_contact(
-    contact_id: str = Path(...),
-    admin_verified: bool = Depends(verify_admin)
-):
-    try:
-        response = contacts_table.get_item(Key={"contact_id": contact_id})
-        
-        if "Item" not in response:
-            raise HTTPException(status_code=404, detail="Contact not found")
-        
-        contacts_table.delete_item(Key={"contact_id": contact_id})
-        
-        return {"message": "Contact deleted successfully"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error deleting contact: {str(e)}")
-
-
 @router.get("/dashboard/stats")
 async def get_dashboard_stats(admin_verified: bool = Depends(verify_admin)):
     try:
@@ -359,10 +242,6 @@ async def get_dashboard_stats(admin_verified: bool = Depends(verify_admin)):
             Select='COUNT'
         )
         stats['active_notifications'] = notifications_response['Count']
-        
-        # Count emergency contacts
-        contacts_response = contacts_table.scan(Select='COUNT')
-        stats['emergency_contacts'] = contacts_response['Count']
         
         return {
             "dashboard_stats": stats,
@@ -457,25 +336,6 @@ async def get_public_notifications(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching notifications: {str(e)}")
 
-@router.get("/public/emergency-contacts")
-async def get_public_emergency_contacts(region: Optional[str] = Query(None)):
-    try:
-        response = contacts_table.scan(
-            FilterExpression=Attr('is_active').eq(True)
-        )
-        
-        contacts = response.get("Items", [])
-        
-        if region:
-            contacts = [c for c in contacts if c.get('region') == region]
-        
-        return {
-            "count": len(contacts),
-            "contacts": contacts
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching contacts: {str(e)}")
-
 @router.post("/create-admin-user")
 async def create_admin_user(admin_data: dict = Body(...)):
     try:
@@ -503,7 +363,7 @@ async def create_admin_user(admin_data: dict = Body(...)):
             "is_active": True,
             "created_at": timestamp,
             "updated_at": timestamp,
-            "permissions": ["notifications", "contacts", "users", "dashboard"]
+            "permissions": ["notifications", "users", "dashboard"]
         }
         
         existing_check = users_table.scan(
@@ -600,3 +460,592 @@ async def list_admin_users(admin_verified: bool = Depends(verify_admin)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching admin users: {str(e)}")
+
+
+# USER MANAGEMENT ENDPOINTS
+@router.get("/users/all")
+async def get_all_users(
+    search: Optional[str] = Query(None),
+    role: Optional[str] = Query(None),
+    is_banned: Optional[bool] = Query(None),
+    limit: int = Query(100),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Get all users with search and filter options"""
+    try:
+        filter_expression = None
+        
+        if role:
+            filter_expression = Attr('role').eq(role)
+        
+        if is_banned is not None:
+            banned_filter = Attr('is_banned').eq(is_banned)
+            filter_expression = banned_filter if filter_expression is None else filter_expression & banned_filter
+        
+        scan_params = {"Limit": limit}
+        if filter_expression:
+            scan_params["FilterExpression"] = filter_expression
+            
+        response = users_table.scan(**scan_params)
+        users = response.get("Items", [])
+        
+        # Apply search filter
+        if search:
+            search_lower = search.lower()
+            users = [u for u in users if (
+                search_lower in u.get('full_name', '').lower() or
+                search_lower in u.get('email', '').lower() or
+                search_lower in u.get('username', '').lower()
+            )]
+        
+        # Remove sensitive data
+        for user in users:
+            user.pop('password_hash', None)
+            user.pop('password', None)
+        
+        # Sort by creation date
+        users.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        return {
+            "count": len(users),
+            "users": users
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching users: {str(e)}")
+
+@router.patch("/users/{user_id}/ban")
+async def ban_user(
+    user_id: str = Path(...),
+    ban_data: dict = Body(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Ban or unban a user"""
+    try:
+        is_banned = ban_data.get("is_banned", True)
+        ban_reason = ban_data.get("ban_reason", "")
+        
+        # Check if user exists
+        response = users_table.get_item(Key={"user_id": user_id})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user = response["Item"]
+        if user.get("role") == "admin":
+            raise HTTPException(status_code=403, detail="Cannot ban admin users")
+        
+        # Update user ban status
+        update_expression = "SET is_banned = :banned, updated_at = :timestamp"
+        expression_values = {
+            ":banned": is_banned,
+            ":timestamp": datetime.utcnow().isoformat()
+        }
+        
+        if is_banned and ban_reason:
+            update_expression += ", ban_reason = :reason, banned_at = :banned_at"
+            expression_values[":reason"] = ban_reason
+            expression_values[":banned_at"] = datetime.utcnow().isoformat()
+        elif not is_banned:
+            update_expression += " REMOVE ban_reason, banned_at"
+        
+        users_table.update_item(
+            Key={"user_id": user_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_values
+        )
+        
+        return {
+            "message": f"User {'banned' if is_banned else 'unbanned'} successfully",
+            "user_id": user_id,
+            "is_banned": is_banned
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating user ban status: {str(e)}")
+
+@router.patch("/users/{user_id}/reset-password")
+async def reset_user_password(
+    user_id: str = Path(...),
+    password_data: dict = Body(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Reset a user's password"""
+    try:
+        new_password = password_data.get("new_password")
+        if not new_password or len(new_password) < 8:
+            raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
+        
+        # Check if user exists
+        response = users_table.get_item(Key={"user_id": user_id})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Hash new password
+        hashed_password = hash_password(new_password)
+        
+        # Update password
+        users_table.update_item(
+            Key={"user_id": user_id},
+            UpdateExpression="SET password_hash = :password, updated_at = :timestamp",
+            ExpressionAttributeValues={
+                ":password": hashed_password,
+                ":timestamp": datetime.utcnow().isoformat()
+            }
+        )
+        
+        return {"message": "Password reset successfully", "user_id": user_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error resetting password: {str(e)}")
+
+@router.put("/users/{user_id}/profile")
+async def update_user_profile(
+    user_id: str = Path(...),
+    profile_data: dict = Body(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Update a user's profile information"""
+    try:
+        # Check if user exists
+        response = users_table.get_item(Key={"user_id": user_id})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Build update expression
+        update_expression = "SET updated_at = :timestamp"
+        expression_values = {":timestamp": datetime.utcnow().isoformat()}
+        
+        allowed_fields = ["full_name", "email", "phone", "address", "location"]
+        for field in allowed_fields:
+            if field in profile_data:
+                update_expression += f", {field} = :{field}"
+                expression_values[f":{field}"] = profile_data[field]
+        
+        users_table.update_item(
+            Key={"user_id": user_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_values
+        )
+        
+        return {"message": "User profile updated successfully", "user_id": user_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating user profile: {str(e)}")
+
+@router.get("/users/{user_id}/activity")
+async def get_user_activity(
+    user_id: str = Path(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Get user activity logs"""
+    try:
+        # Get user info
+        user_response = users_table.get_item(Key={"user_id": user_id})
+        if "Item" not in user_response:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user = user_response["Item"]
+        user.pop('password_hash', None)
+        
+        # Get user's posts
+        posts_response = posts_table.scan(
+            FilterExpression=Attr('author_id').eq(user_id)
+        )
+        posts = posts_response.get("Items", [])
+        
+        # Get user's requests
+        requests_response = requests_table.scan(
+            FilterExpression=Attr('user_id').eq(user_id)
+        )
+        user_requests = requests_response.get("Items", [])
+        
+        return {
+            "user": user,
+            "activity": {
+                "posts_count": len(posts),
+                "requests_count": len(user_requests),
+                "recent_posts": sorted(posts, key=lambda x: x.get('created_at', ''), reverse=True)[:5],
+                "recent_requests": sorted(user_requests, key=lambda x: x.get('created_at', ''), reverse=True)[:5]
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching user activity: {str(e)}")
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str = Path(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Delete a user account"""
+    try:
+        # Check if user exists
+        response = users_table.get_item(Key={"user_id": user_id})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user = response["Item"]
+        if user.get("role") == "admin":
+            raise HTTPException(status_code=403, detail="Cannot delete admin users")
+        
+        # Delete the user
+        users_table.delete_item(Key={"user_id": user_id})
+        
+        return {"message": "User deleted successfully", "user_id": user_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting user: {str(e)}")
+
+
+# REQUEST/REPORT MANAGEMENT ENDPOINTS
+@router.get("/requests/all")
+async def get_all_requests(
+    status: Optional[str] = Query(None),
+    priority: Optional[str] = Query(None),
+    region: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
+    limit: int = Query(100),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Get all assistance requests with filters"""
+    try:
+        response = requests_table.scan(Limit=limit)
+        requests = response.get("Items", [])
+        
+        # Apply filters
+        if status:
+            requests = [r for r in requests if r.get('status') == status]
+        
+        if priority:
+            requests = [r for r in requests if r.get('priority') == priority]
+        
+        if region:
+            requests = [r for r in requests if r.get('location', '').lower().find(region.lower()) != -1]
+        
+        if search:
+            search_lower = search.lower()
+            requests = [r for r in requests if (
+                search_lower in r.get('user_name', '').lower() or
+                search_lower in r.get('description', '').lower() or
+                search_lower in r.get('location', '').lower()
+            )]
+        
+        # Sort by creation date
+        requests.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+        
+        return {
+            "count": len(requests),
+            "requests": requests
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
+
+@router.patch("/requests/{request_id}/status")
+async def update_request_status(
+    request_id: str = Path(...),
+    status_data: dict = Body(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Update request status"""
+    try:
+        new_status = status_data.get("status")
+        admin_note = status_data.get("admin_note", "")
+        
+        if new_status not in ["pending", "in_progress", "resolved", "cancelled"]:
+            raise HTTPException(status_code=400, detail="Invalid status")
+        
+        # Check if request exists
+        response = requests_table.get_item(Key={"request_id": request_id})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="Request not found")
+        
+        # Update status
+        update_expression = "SET #status = :status, updated_at = :timestamp"
+        expression_values = {
+            ":status": new_status,
+            ":timestamp": datetime.utcnow().isoformat()
+        }
+        expression_names = {"#status": "status"}
+        
+        if admin_note:
+            update_expression += ", admin_note = :note, admin_updated_at = :admin_time"
+            expression_values[":note"] = admin_note
+            expression_values[":admin_time"] = datetime.utcnow().isoformat()
+        
+        requests_table.update_item(
+            Key={"request_id": request_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_values,
+            ExpressionAttributeNames=expression_names
+        )
+        
+        return {
+            "message": "Request status updated successfully",
+            "request_id": request_id,
+            "new_status": new_status
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating request status: {str(e)}")
+
+@router.patch("/requests/{request_id}/assign")
+async def assign_request_to_expert(
+    request_id: str = Path(...),
+    assign_data: dict = Body(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Assign request to an expert"""
+    try:
+        expert_id = assign_data.get("expert_id")
+        
+        # Verify expert exists and has expert role
+        expert_response = users_table.get_item(Key={"user_id": expert_id})
+        if "Item" not in expert_response:
+            raise HTTPException(status_code=404, detail="Expert not found")
+        
+        expert = expert_response["Item"]
+        if expert.get("role") != "expert":
+            raise HTTPException(status_code=400, detail="User is not an expert")
+        
+        # Update request
+        requests_table.update_item(
+            Key={"request_id": request_id},
+            UpdateExpression="SET assigned_to = :expert_id, assigned_at = :timestamp, #status = :status",
+            ExpressionAttributeValues={
+                ":expert_id": expert_id,
+                ":timestamp": datetime.utcnow().isoformat(),
+                ":status": "in_progress"
+            },
+            ExpressionAttributeNames={"#status": "status"}
+        )
+        
+        return {
+            "message": "Request assigned successfully",
+            "request_id": request_id,
+            "assigned_to": expert_id
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error assigning request: {str(e)}")
+
+@router.post("/requests/{request_id}/notes")
+async def add_admin_note_to_request(
+    request_id: str = Path(...),
+    note_data: dict = Body(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Add admin note to request"""
+    try:
+        note = note_data.get("note")
+        if not note:
+            raise HTTPException(status_code=400, detail="Note content is required")
+        
+        # Get current request
+        response = requests_table.get_item(Key={"request_id": request_id})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="Request not found")
+        
+        request = response["Item"]
+        admin_notes = request.get("admin_notes", [])
+        
+        # Add new note
+        new_note = {
+            "note_id": str(uuid4()),
+            "note": note,
+            "created_at": datetime.utcnow().isoformat(),
+            "created_by": "admin"
+        }
+        admin_notes.append(new_note)
+        
+        # Update request
+        requests_table.update_item(
+            Key={"request_id": request_id},
+            UpdateExpression="SET admin_notes = :notes, updated_at = :timestamp",
+            ExpressionAttributeValues={
+                ":notes": admin_notes,
+                ":timestamp": datetime.utcnow().isoformat()
+            }
+        )
+        
+        return {
+            "message": "Note added successfully",
+            "note": new_note
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error adding note: {str(e)}")
+
+
+# GLOBAL ANNOUNCEMENTS ENDPOINTS
+@router.post("/announcements")
+async def create_announcement(
+    announcement_data: dict = Body(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Create a global announcement"""
+    try:
+        # Create announcements table if not exists
+        try:
+            announcements_table = dynamodb.Table('cloud60-announcements')
+            announcements_table.load()
+        except:
+            announcements_table = dynamodb.create_table(
+                TableName='cloud60-announcements',
+                KeySchema=[
+                    {'AttributeName': 'announcement_id', 'KeyType': 'HASH'}
+                ],
+                AttributeDefinitions=[
+                    {'AttributeName': 'announcement_id', 'AttributeType': 'S'}
+                ],
+                BillingMode='PAY_PER_REQUEST'
+            )
+            announcements_table.wait_until_exists()
+        
+        announcement_id = str(uuid4())
+        timestamp = datetime.utcnow().isoformat()
+        
+        item = {
+            "announcement_id": announcement_id,
+            "title": announcement_data.get("title"),
+            "content": announcement_data.get("content"),
+            "is_active": announcement_data.get("is_active", True),
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "created_by": "admin"
+        }
+        
+        announcements_table.put_item(Item=item)
+        
+        return {
+            "message": "Announcement created successfully",
+            "announcement_id": announcement_id,
+            "data": item
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating announcement: {str(e)}")
+
+@router.get("/announcements")
+async def get_announcements(
+    active_only: bool = Query(True),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Get all announcements"""
+    try:
+        announcements_table = dynamodb.Table('cloud60-announcements')
+        
+        if active_only:
+            response = announcements_table.scan(
+                FilterExpression=Attr('is_active').eq(True)
+            )
+        else:
+            response = announcements_table.scan()
+        
+        announcements = response.get("Items", [])
+        
+        # Sort by creation date (newest first)
+        announcements.sort(
+            key=lambda x: x.get('created_at', ''),
+            reverse=True
+        )
+        
+        return {
+            "count": len(announcements),
+            "announcements": announcements
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching announcements: {str(e)}")
+
+@router.put("/announcements/{announcement_id}")
+async def update_announcement(
+    announcement_id: str = Path(...),
+    update_data: dict = Body(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Update an announcement"""
+    try:
+        announcements_table = dynamodb.Table('cloud60-announcements')
+        
+        # Check if announcement exists
+        response = announcements_table.get_item(Key={"announcement_id": announcement_id})
+        if "Item" not in response:
+            raise HTTPException(status_code=404, detail="Announcement not found")
+        
+        # Build update expression
+        update_expression = "SET updated_at = :timestamp"
+        expression_values = {":timestamp": datetime.utcnow().isoformat()}
+        expression_names = {}
+        
+        allowed_fields = ["title", "content", "is_active"]
+        for field in allowed_fields:
+            if field in update_data:
+                update_expression += f", {field} = :{field}"
+                expression_values[f":{field}"] = update_data[field]
+        
+        update_params = {
+            "Key": {"announcement_id": announcement_id},
+            "UpdateExpression": update_expression,
+            "ExpressionAttributeValues": expression_values
+        }
+        
+        if expression_names:
+            update_params["ExpressionAttributeNames"] = expression_names
+            
+        announcements_table.update_item(**update_params)
+        
+        return {"message": "Announcement updated successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error updating announcement: {str(e)}")
+
+@router.delete("/announcements/{announcement_id}")
+async def delete_announcement(
+    announcement_id: str = Path(...),
+    admin_verified: bool = Depends(verify_admin)
+):
+    """Delete an announcement"""
+    try:
+        announcements_table = dynamodb.Table('cloud60-announcements')
+        
+        announcements_table.delete_item(Key={"announcement_id": announcement_id})
+        
+        return {"message": "Announcement deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting announcement: {str(e)}")
+
+@router.get("/public/announcements")
+async def get_public_announcements():
+    """Get active announcements for public display"""
+    try:
+        announcements_table = dynamodb.Table('cloud60-announcements')
+        
+        response = announcements_table.scan(
+            FilterExpression=Attr('is_active').eq(True)
+        )
+        
+        announcements = response.get("Items", [])
+        current_time = datetime.utcnow().isoformat()
+        
+        # All active announcements (no expiration check needed)
+        active_announcements = announcements
+        
+        # Sort by creation date (newest first)
+        active_announcements.sort(
+            key=lambda x: x.get('created_at', ''),
+            reverse=True
+        )
+        
+        return {
+            "count": len(active_announcements),
+            "announcements": active_announcements
+        }
+    except Exception as e:
+        # If table doesn't exist, return empty
+        return {"count": 0, "announcements": []}

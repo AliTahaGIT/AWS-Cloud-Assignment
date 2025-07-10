@@ -6,31 +6,21 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDash.css';
 import NotificationsManager from '../../components/Admin/NotificationsManager';
-import ContactsManager from '../../components/Admin/ContactsManager';
+import UserManagement from '../../components/Admin/UserManagement';
+import RequestManagement from '../../components/Admin/RequestManagement';
+import AnnouncementsManager from '../../components/Admin/AnnouncementsManager';
 
 interface DashboardStats {
   total_users: number;
   total_posts: number;
   total_requests: number;
   active_notifications: number;
-  emergency_contacts: number;
-}
-
-interface FloodNotification {
-  notification_id: string;
-  title: string;
-  message: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  affected_regions: string[];
-  is_active: boolean;
-  created_at: string;
 }
 
 const AdminDash: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'notifications' | 'contacts'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'notifications' | 'users' | 'requests' | 'announcements'>('dashboard');
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [notifications, setNotifications] = useState<FloodNotification[]>([]);
   const [loading, setLoading] = useState(false);
   const [adminKey, setAdminKey] = useState<string>('');
   const [adminName, setAdminName] = useState<string>('');
@@ -49,7 +39,6 @@ const AdminDash: React.FC = () => {
     
     // Fetch data only after authentication is verified
     fetchDashboardStats(storedAdminKey);
-    fetchNotifications(storedAdminKey);
   }, [navigate]);
 
   const fetchDashboardStats = async (key: string) => {
@@ -69,23 +58,6 @@ const AdminDash: React.FC = () => {
       console.error('Error fetching dashboard stats:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchNotifications = async (key: string) => {
-    try {
-      const response = await fetch(`http://localhost:8000/admin/notifications?admin_key=${key}`);
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.notifications);
-      } else if (response.status === 403) {
-        // Session expired, redirect to login
-        localStorage.removeItem('admin_key');
-        localStorage.removeItem('admin_name');
-        navigate('/admin-login');
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
     }
   };
 
@@ -159,29 +131,6 @@ const AdminDash: React.FC = () => {
             </div>
           </div>
 
-          <div className="recent-activity">
-            <h2>Recent Flood Notifications</h2>
-            <div className="notifications-list">
-              {notifications.slice(0, 5).map((notification) => (
-                <div key={notification.notification_id} className={`notification-item ${notification.severity}`}>
-                  <div className="notification-header">
-                    <h4>{notification.title}</h4>
-                    <span className={`severity-badge ${notification.severity}`}>
-                      {notification.severity.toUpperCase()}
-                    </span>
-                  </div>
-                  <p className="notification-message">{notification.message}</p>
-                  <div className="notification-footer">
-                    <span className="regions">Regions: {notification.affected_regions.join(', ')}</span>
-                    <span className="timestamp">{new Date(notification.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              ))}
-              {notifications.length === 0 && (
-                <p className="no-notifications">No notifications found</p>
-              )}
-            </div>
-          </div>
         </>
       )}
     </div>
@@ -220,13 +169,35 @@ const AdminDash: React.FC = () => {
           </li>
           <li>
             <button
-              className={activeTab === 'contacts' ? 'active' : ''}
-              onClick={() => setActiveTab('contacts')}
+              className={activeTab === 'users' ? 'active' : ''}
+              onClick={() => setActiveTab('users')}
             >
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
               </svg>
-              Emergency Contacts
+              User Management
+            </button>
+          </li>
+          <li>
+            <button
+              className={activeTab === 'requests' ? 'active' : ''}
+              onClick={() => setActiveTab('requests')}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 00-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z" />
+              </svg>
+              Request Management
+            </button>
+          </li>
+          <li>
+            <button
+              className={activeTab === 'announcements' ? 'active' : ''}
+              onClick={() => setActiveTab('announcements')}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 18h10v-2H7v2zm0-4h10v-2H7v2zm0-4h10V8H7v2zM4 6v14h16V6H4zm0-2h16c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              </svg>
+              Announcements
             </button>
           </li>
         </ul>
@@ -244,7 +215,9 @@ const AdminDash: React.FC = () => {
       <main className="admin-main">
         {activeTab === 'dashboard' && renderDashboard()}
         {activeTab === 'notifications' && <NotificationsManager />}
-        {activeTab === 'contacts' && <ContactsManager />}
+        {activeTab === 'users' && <UserManagement />}
+        {activeTab === 'requests' && <RequestManagement />}
+        {activeTab === 'announcements' && <AnnouncementsManager />}
       </main>
     </div>
   );

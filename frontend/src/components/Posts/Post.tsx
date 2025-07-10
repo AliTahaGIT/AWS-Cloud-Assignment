@@ -11,6 +11,7 @@ interface PostProps {
   image: string;
   organization: string;
   S3Key: string;
+  onClick?: () => void;
 }
 
 function Post({
@@ -21,6 +22,7 @@ function Post({
   image,
   organization,
   S3Key,
+  onClick,
 }: PostProps) {
   // Format the date to match your existing format
   const formatDate = (dateString: string) => {
@@ -35,8 +37,14 @@ function Post({
     return new Date(cleanDate).toLocaleDateString("en-US", options);
   };
 
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
-    <div className="post-card" id={id}>
+    <div className="post-card" id={id} onClick={handleClick}>
       <div className="post-header">
         <h2 className="post-title">{title}</h2>
         <p className="post-organization">{organization}</p>

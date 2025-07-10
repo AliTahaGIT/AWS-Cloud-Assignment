@@ -48,19 +48,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-.brand-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--gradient-accent);
-  border-radius: var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--surface-primary);
-  font-weight: var(--font-weight-bold);
-  font-size: var(--text-lg);
-}
-
 /* Navigation Menu */
 .navbar-menu {
   display: flex;
@@ -332,12 +319,6 @@
   .navbar-brand {
     font-size: var(--text-xl);
   }
-
-  .brand-icon {
-    width: 28px;
-    height: 28px;
-    font-size: var(--text-base);
-  }
 }
 
 @media (max-width: 480px) {
@@ -347,12 +328,6 @@
 
   .navbar-brand {
     font-size: var(--text-lg);
-  }
-
-  .brand-icon {
-    width: 24px;
-    height: 24px;
-    font-size: var(--text-sm);
   }
 
   .navbar-mobile {
