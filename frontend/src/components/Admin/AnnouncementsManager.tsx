@@ -1,7 +1,5 @@
-/*
- * Announcements Manager Component
- * Author: Amir (TP070572)
- */
+// Announcements Manager Component
+// Author: TP070572
 import React, { useState, useEffect } from 'react';
 import './AnnouncementsManager.css';
 import useToast from '../../hooks/useToast';
@@ -37,12 +35,8 @@ const AnnouncementsManager: React.FC = () => {
   const [adminKey] = useState(localStorage.getItem('admin_key') || '');
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
-
   const fetchAnnouncements = async () => {
-    if (!adminKey) {
-      console.error('No admin key found');
-      return;
-    }
+    if (!adminKey) return;
 
     try {
       setLoading(true);
@@ -53,28 +47,21 @@ const AnnouncementsManager: React.FC = () => {
         const data = await response.json();
         setAnnouncements(data.announcements);
       } else if (response.status === 403) {
-        console.error('Admin session expired or invalid');
         window.location.href = '/admin-login';
       } else {
-        console.error('Error fetching announcements:', response.status, response.statusText);
         showError('Error', 'Failed to fetch announcements');
       }
     } catch (error) {
-      console.error('Error fetching announcements:', error);
-      showError('Network Error', 'Unable to connect to the server');
+      showError('Network Error', 'Unable to connect to server');
     } finally {
       setLoading(false);
     }
   };
 
   const createAnnouncement = async () => {
-    if (!adminKey) {
-      console.error('No admin key found');
-      return;
-    }
+    if (!adminKey) return;
 
     try {
-      console.log('Creating announcement with data:', formData);
       const response = await fetch(`http://localhost:8000/admin/announcements?admin_key=${adminKey}`, {
         method: 'POST',
         headers: {
@@ -84,19 +71,16 @@ const AnnouncementsManager: React.FC = () => {
       });
 
       if (response.ok) {
-        console.log('Announcement created successfully');
-        showSuccess('Announcement Created', 'Global announcement has been created and published successfully.');
+        showSuccess('Announcement Created', 'Global announcement has been created successfully.');
         await fetchAnnouncements();
         setShowCreateModal(false);
         resetForm();
       } else {
         const errorData = await response.json();
-        console.error('Error creating announcement:', response.status, errorData);
-        showError('Creation Failed', errorData.detail || 'Unable to create announcement. Please try again.');
+        showError('Creation Failed', errorData.detail || 'Unable to create announcement.');
       }
     } catch (error) {
-      console.error('Error creating announcement:', error);
-      showError('Network Error', 'Unable to connect to the server. Please check your connection and try again.');
+      showError('Network Error', 'Unable to connect to server.');
     }
   };
 
@@ -125,7 +109,6 @@ const AnnouncementsManager: React.FC = () => {
         showError('Update Failed', errorData.detail || 'Unable to update announcement');
       }
     } catch (error) {
-      console.error('Error updating announcement:', error);
       showError('Network Error', 'Unable to update announcement');
     }
   };
@@ -148,7 +131,6 @@ const AnnouncementsManager: React.FC = () => {
         showError('Delete Failed', 'Unable to delete announcement');
       }
     } catch (error) {
-      console.error('Error deleting announcement:', error);
       showError('Network Error', 'Unable to delete announcement');
     }
   };

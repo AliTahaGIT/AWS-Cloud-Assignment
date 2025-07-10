@@ -1,7 +1,5 @@
-/*
- * Admin Dashboard Component
- * Author: Amir (TP070572)
- */
+// Admin Dashboard Component
+// Author: TP070572
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDash.css';

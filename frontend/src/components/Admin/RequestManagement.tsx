@@ -1,7 +1,5 @@
-/*
- * Request Management Component
- * Author: Amir (TP070572)
- */
+// Request Management Component
+// Author: TP070572
 import React, { useState, useEffect } from 'react';
 import './RequestManagement.css';
 import useToast from '../../hooks/useToast';
@@ -63,39 +61,27 @@ const RequestManagement: React.FC = () => {
   const priorityOptions = ['low', 'medium', 'high', 'critical'];
 
   const fetchRequests = async () => {
-    if (!adminKey) {
-      console.error('No admin key found');
-      return;
-    }
+    if (!adminKey) return;
 
     try {
       setLoading(true);
       let url = `http://localhost:8000/admin/requests/all?admin_key=${adminKey}`;
       
-      if (statusFilter) {
-        url += `&status=${statusFilter}`;
-      }
-      if (priorityFilter) {
-        url += `&priority=${priorityFilter}`;
-      }
-      if (searchTerm) {
-        url += `&search=${encodeURIComponent(searchTerm)}`;
-      }
+      if (statusFilter) url += `&status=${statusFilter}`;
+      if (priorityFilter) url += `&priority=${priorityFilter}`;
+      if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
 
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setRequests(data.requests);
       } else if (response.status === 403) {
-        console.error('Admin session expired or invalid');
         window.location.href = '/admin-login';
       } else {
-        console.error('Error fetching requests:', response.status, response.statusText);
         showError('Error', 'Failed to fetch requests');
       }
     } catch (error) {
-      console.error('Error fetching requests:', error);
-      showError('Network Error', 'Unable to connect to the server');
+      showError('Network Error', 'Unable to connect to server');
     } finally {
       setLoading(false);
     }
@@ -109,7 +95,7 @@ const RequestManagement: React.FC = () => {
         setExperts(data.users);
       }
     } catch (error) {
-      console.error('Error fetching experts:', error);
+      // Ignore
     }
   };
 
@@ -138,7 +124,6 @@ const RequestManagement: React.FC = () => {
         showError('Error', error.detail || 'Failed to update status');
       }
     } catch (error) {
-      console.error('Error updating status:', error);
       showError('Network Error', 'Unable to update status');
     }
   };
@@ -167,7 +152,6 @@ const RequestManagement: React.FC = () => {
         showError('Error', error.detail || 'Failed to assign request');
       }
     } catch (error) {
-      console.error('Error assigning request:', error);
       showError('Network Error', 'Unable to assign request');
     }
   };
@@ -191,8 +175,6 @@ const RequestManagement: React.FC = () => {
         setShowNoteModal(false);
         setNewNote('');
         
-        // Re-open details modal with updated request
-        const updatedRequests = await fetchRequests();
         const updatedRequest = requests.find(r => r.request_id === selectedRequest.request_id);
         if (updatedRequest) {
           setSelectedRequest(updatedRequest);
@@ -203,7 +185,6 @@ const RequestManagement: React.FC = () => {
         showError('Error', error.detail || 'Failed to add note');
       }
     } catch (error) {
-      console.error('Error adding note:', error);
       showError('Network Error', 'Unable to add note');
     }
   };
@@ -290,7 +271,6 @@ const RequestManagement: React.FC = () => {
           >
             Clear Filters
           </button>
-
         </div>
       </div>
 

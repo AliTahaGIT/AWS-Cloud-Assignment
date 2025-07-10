@@ -1,7 +1,5 @@
-/*
- * Flood Notifications Manager Component
- * Author: Amir (TP070572)
- */
+// Flood Notifications Manager Component
+// Author: TP070572
 import React, { useState, useEffect } from 'react';
 import './NotificationsManager.css';
 import useToast from '../../hooks/useToast';

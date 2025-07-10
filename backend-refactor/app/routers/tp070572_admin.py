@@ -1,7 +1,5 @@
-"""
-Admin Router - Flood Management System
-Author: Amir (TP070572)
-"""
+# Admin Router - Flood Management System  
+# Author: TP070572
 
 import secrets
 from datetime import datetime, timedelta

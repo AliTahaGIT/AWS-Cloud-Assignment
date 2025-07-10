@@ -1,7 +1,5 @@
-/*
- * User Management Component
- * Author: Amir (TP070572)
- */
+// User Management Component
+// Author: TP070572
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
 import useToast from '../../hooks/useToast';
@@ -18,8 +16,6 @@ interface User {
   created_at?: string;
   updated_at?: string;
 }
-
-
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -36,36 +32,26 @@ const UserManagement: React.FC = () => {
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const fetchUsers = async () => {
-    if (!adminKey) {
-      console.error('No admin key found');
-      return;
-    }
+    if (!adminKey) return;
 
     try {
       setLoading(true);
       let url = `http://localhost:8000/admin/users/all?admin_key=${adminKey}`;
       
-      if (searchTerm) {
-        url += `&search=${encodeURIComponent(searchTerm)}`;
-      }
-      if (roleFilter) {
-        url += `&role=${roleFilter}`;
-      }
+      if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+      if (roleFilter) url += `&role=${roleFilter}`;
 
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users);
       } else if (response.status === 403) {
-        console.error('Admin session expired or invalid');
         window.location.href = '/admin-login';
       } else {
-        console.error('Error fetching users:', response.status, response.statusText);
         showError('Error', 'Failed to fetch users');
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      showError('Network Error', 'Unable to connect to the server');
+      showError('Network Error', 'Unable to connect to server');
     } finally {
       setLoading(false);
     }
@@ -93,7 +79,6 @@ const UserManagement: React.FC = () => {
         showError('Error', error.detail || 'Failed to delete user');
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
       showError('Network Error', 'Unable to delete user');
     }
   };
@@ -121,7 +106,6 @@ const UserManagement: React.FC = () => {
         showError('Error', error.detail || 'Failed to reset password');
       }
     } catch (error) {
-      console.error('Error resetting password:', error);
       showError('Network Error', 'Unable to reset password');
     }
   };
@@ -150,7 +134,6 @@ const UserManagement: React.FC = () => {
         showError('Error', error.detail || 'Failed to update profile');
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
       showError('Network Error', 'Unable to update profile');
     }
   };
@@ -197,7 +180,6 @@ const UserManagement: React.FC = () => {
             <option value="expert">Experts</option>
             <option value="admin">Admins</option>
           </select>
-
 
           <button 
             className="btn btn-secondary"
@@ -302,7 +284,6 @@ const UserManagement: React.FC = () => {
           )}
         </div>
       )}
-
 
       {/* Edit Profile Modal */}
       {showEditModal && selectedUser && (
