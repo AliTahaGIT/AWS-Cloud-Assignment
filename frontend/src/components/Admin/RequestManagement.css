@@ -442,9 +442,18 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .request-management {
+    padding: var(--space-3);
+  }
+
+  .management-header h1 {
+    font-size: var(--text-2xl);
+  }
+
   .management-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: var(--space-4);
   }
 
   .search-section {
@@ -453,6 +462,7 @@
 
   .filters-section {
     flex-wrap: wrap;
+    gap: var(--space-3);
   }
 
   .filter-select {
@@ -462,15 +472,32 @@
 
   .requests-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .request-card {
+    padding: var(--space-5);
   }
 
   .request-header {
     flex-direction: column;
     align-items: flex-start;
+    gap: var(--space-3);
   }
 
   .request-badges {
-    margin-top: var(--space-2);
+    margin-top: 0;
+    align-self: stretch;
+    justify-content: flex-end;
+  }
+
+  .request-meta {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .request-actions {
+    justify-content: center;
   }
 
   .detail-grid {
@@ -479,9 +506,93 @@
 
   .detail-actions {
     flex-direction: column;
+    gap: var(--space-3);
   }
 
   .detail-actions .btn {
     width: 100%;
+  }
+
+  .modal-content {
+    margin: var(--space-4);
+    max-height: calc(100vh - 2rem);
+  }
+
+  .request-details {
+    padding: var(--space-4);
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .request-management {
+    padding: var(--space-2);
+  }
+
+  .management-header {
+    margin-bottom: var(--space-6);
+  }
+
+  .management-header h1 {
+    font-size: var(--text-xl);
+  }
+
+  .filters-section {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .filter-select, .btn {
+    width: 100%;
+  }
+
+  .request-card {
+    padding: var(--space-4);
+  }
+
+  .request-info h3 {
+    font-size: var(--text-lg);
+  }
+
+  .request-location {
+    font-size: var(--text-sm);
+  }
+
+  .request-description {
+    font-size: var(--text-sm);
+  }
+
+  .status-badge {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .request-actions .btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .modal-content.large {
+    margin: var(--space-2);
+  }
+
+  .detail-section h3 {
+    font-size: var(--text-lg);
+  }
+
+  .detail-item label {
+    font-size: var(--text-sm);
+  }
+
+  .detail-item span {
+    font-size: var(--text-sm);
   }
 }

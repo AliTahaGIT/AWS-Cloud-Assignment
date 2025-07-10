@@ -756,26 +756,48 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .notifications-manager {
-    padding: var(--space-4);
+    padding: var(--space-3);
   }
 
   .manager-header {
-    padding: var(--space-6);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .manager-header h1 {
+    font-size: var(--text-2xl);
   }
 
   .manager-actions {
     flex-direction: column;
     align-items: stretch;
     gap: var(--space-4);
+    padding: var(--space-4);
+  }
+
+  .manager-actions .btn {
+    width: 100%;
+    justify-content: center;
   }
 
   .filters {
     justify-content: center;
     flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .filters .form-select {
+    flex: 1;
+    min-width: 120px;
   }
 
   .notifications-grid {
     grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .notification-card {
+    padding: var(--space-6);
   }
 
   .card-header {
@@ -797,6 +819,7 @@
 
   .card-actions {
     justify-content: center;
+    flex-wrap: wrap;
   }
 
   .form-row {

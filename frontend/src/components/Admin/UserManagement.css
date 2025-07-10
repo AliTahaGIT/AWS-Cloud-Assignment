@@ -467,9 +467,18 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .user-management {
+    padding: var(--space-3);
+  }
+
+  .management-header h1 {
+    font-size: var(--text-2xl);
+  }
+
   .management-controls {
     flex-direction: column;
     align-items: stretch;
+    gap: var(--space-4);
   }
 
   .search-section {
@@ -478,6 +487,7 @@
 
   .filters-section {
     flex-wrap: wrap;
+    gap: var(--space-3);
   }
 
   .filter-select {
@@ -487,13 +497,126 @@
 
   .users-table-container {
     overflow-x: auto;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
   }
 
   .users-table {
     min-width: 800px;
+    font-size: var(--text-sm);
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: var(--space-3);
   }
 
   .activity-stats {
     grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+
+  .modal-content.large {
+    margin: var(--space-4);
+    max-height: calc(100vh - 2rem);
+  }
+
+  .user-details {
+    padding: var(--space-4);
+  }
+
+  .detail-section {
+    margin-bottom: var(--space-6);
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+
+  .edit-form,
+  .password-form {
+    padding: var(--space-4);
+  }
+}
+
+@media (max-width: 480px) {
+  .user-management {
+    padding: var(--space-2);
+  }
+
+  .management-header {
+    margin-bottom: var(--space-6);
+  }
+
+  .management-header h1 {
+    font-size: var(--text-xl);
+  }
+
+  .filters-section {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .filter-select, .btn {
+    width: 100%;
+  }
+
+  .users-table {
+    min-width: 600px;
+    font-size: var(--text-xs);
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: var(--space-2);
+  }
+
+  .activity-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-item h4 {
+    font-size: var(--text-base);
+  }
+
+  .stat-item p {
+    font-size: var(--text-lg);
+  }
+
+  .modal-content.large {
+    margin: var(--space-2);
+  }
+
+  .user-info {
+    padding: var(--space-3);
+  }
+
+  .user-info strong {
+    min-width: 60px;
+    font-size: var(--text-sm);
+  }
+
+  .delete-confirmation p {
+    font-size: var(--text-base);
+  }
+
+  .btn {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-sm);
+  }
+
+  .btn.btn-sm {
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--text-xs);
   }
 }
