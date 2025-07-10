@@ -18,7 +18,8 @@ function Navbar() {
         {/* Logo/Brand */}
         <div className="navbar-brand">
           <a href="/" className="brand-link">
-            MYFlood
+            <div className="brand-icon">C60</div>
+            <span>Cloud60</span>
           </a>
         </div>
 
@@ -34,23 +35,28 @@ function Navbar() {
           )}
           <a
             href='/login'
-            className="navbar-mobile-login"
+            className="navbar-login-btn"
             onClick={(e) => {
-              toggleMenu();
-
               if (isUserLogged) {
-                e.preventDefault(); // prevent navigation for logout
+                e.preventDefault();
                 localStorage.clear(); 
                 window.location.href = "/login"; 
               }
             }}
           >
+            <svg className="login-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isUserLogged ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              )}
+            </svg>
             {isUserLogged ? "Logout" : "Login"}
           </a>
         </div>
 
         {/* Mobile Menu Toggle */}
-        <div className="navbar-toggle" onClick={toggleMenu}>
+        <div className={`navbar-toggle ${isMenuOpen ? "active" : ""}`} onClick={toggleMenu}>
           <span className="toggle-bar"></span>
           <span className="toggle-bar"></span>
           <span className="toggle-bar"></span>
@@ -58,11 +64,11 @@ function Navbar() {
 
         {/* Mobile Navigation */}
         <div className={`navbar-mobile ${isMenuOpen ? "active" : ""}`}>
-          <a href="/about" className="navbar-mobile-link" onClick={toggleMenu}>
-            About us
+          <a href="/about-us" className="navbar-mobile-link" onClick={toggleMenu}>
+            About
           </a>
           {isUserLogged && (
-            <a href="/user-dashboard" className="navbar-link">
+            <a href="/UserDash" className="navbar-mobile-link" onClick={toggleMenu}>
               Dashboard
             </a>
           )}
@@ -73,7 +79,7 @@ function Navbar() {
               toggleMenu();
 
               if (isUserLogged) {
-                e.preventDefault(); // prevent navigation for logout
+                e.preventDefault();
                 localStorage.clear(); 
                 window.location.href = "/login"; 
               }

@@ -4,24 +4,25 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--surface-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000;
-  padding: 1rem;
-  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  padding: var(--space-4);
+  backdrop-filter: blur(20px);
 }
 
 .modal-content {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  background: var(--surface-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-2xl);
   width: 100%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
-  animation: modalSlideIn 0.3s ease-out;
+  animation: modalSlideIn var(--transition-slow) ease-out;
+  border: 1px solid var(--neutral-200);
 }
 
 @keyframes modalSlideIn {
@@ -39,33 +40,41 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2rem 2rem 1rem;
-  border-bottom: 1px solid #e9ecef;
+  padding: var(--space-8) var(--space-8) var(--space-4);
+  border-bottom: 1px solid var(--neutral-200);
+  background: var(--gradient-surface);
 }
 
 .modal-header h2 {
-  color: #2c3e50;
-  font-size: 1.5rem;
-  font-weight: 600;
+  color: var(--neutral-900);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
   margin: 0;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: var(--neutral-900) !important;
+  background-clip: unset !important;
 }
 
 .close-btn {
   background: none;
   border: none;
-  color: #6c757d;
+  color: var(--neutral-500);
   cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: all 0.2s ease;
+  padding: var(--space-2);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
 }
 
 .close-btn:hover {
-  background: #f8f9fa;
-  color: #495057;
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  transform: scale(1.1);
 }
 
 .close-btn:disabled {
@@ -76,83 +85,100 @@
 .close-btn svg {
   width: 20px;
   height: 20px;
+  transition: transform var(--transition-fast);
 }
 
 .edit-form {
-  padding: 1.5rem 2rem 2rem;
+  padding: var(--space-6) var(--space-8) var(--space-8);
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #495057;
-  font-weight: 600;
-  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--neutral-700);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-sm);
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 0.75rem 1rem;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  font-family: inherit;
+  padding: var(--space-3) var(--space-4);
+  border: 2px solid var(--neutral-200);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  transition: all var(--transition-fast);
+  font-family: var(--font-family);
+  background: var(--surface-primary);
+  color: var(--neutral-900);
+  box-shadow: var(--shadow-xs);
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  border-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), var(--shadow-sm);
 }
 
 .form-group input:disabled,
 .form-group textarea:disabled {
-  background-color: #f8f9fa;
+  background-color: var(--neutral-50);
   cursor: not-allowed;
   opacity: 0.7;
+  border-color: var(--neutral-200);
 }
 
 .form-group textarea {
   resize: vertical;
   min-height: 120px;
+  line-height: var(--leading-normal);
 }
 
 .modal-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2rem;
-  gap: 1rem;
+  margin-top: var(--space-8);
+  gap: var(--space-4);
+  padding: var(--space-6) 0 0;
+  border-top: 1px solid var(--neutral-200);
 }
 
 .action-buttons {
   display: flex;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
 .delete-btn {
-  background: #dc3545;
-  color: white;
+  background: var(--gradient-error);
+  color: var(--surface-primary);
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+  font-size: var(--text-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-sm);
 }
 
 .delete-btn:hover:not(:disabled) {
-  background: #c82333;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+  background: linear-gradient(135deg, var(--error-600) 0%, var(--error-700) 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-lg);
 }
 
 .delete-btn:disabled {
@@ -162,20 +188,26 @@
 }
 
 .cancel-btn {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
+  background: var(--surface-primary);
+  color: var(--neutral-700);
+  border: 2px solid var(--neutral-300);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+  font-size: var(--text-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-sm);
 }
 
 .cancel-btn:hover:not(:disabled) {
-  background: #5a6268;
-  transform: translateY(-1px);
+  background: var(--neutral-50);
+  border-color: var(--neutral-400);
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--shadow-md);
 }
 
 .cancel-btn:disabled {
@@ -185,21 +217,26 @@
 }
 
 .update-btn {
-  background: #007bff;
-  color: white;
+  background: var(--gradient-primary);
+  color: var(--surface-primary);
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+  font-size: var(--text-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-sm);
 }
 
 .update-btn:hover:not(:disabled) {
-  background: #0056b3;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.05);
 }
 
 .update-btn:disabled {
@@ -211,25 +248,26 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .modal-overlay {
-    padding: 0.5rem;
+    padding: var(--space-2);
   }
 
   .modal-header {
-    padding: 1.5rem 1.5rem 1rem;
+    padding: var(--space-6) var(--space-6) var(--space-4);
   }
 
   .modal-header h2 {
-    font-size: 1.25rem;
+    font-size: var(--text-xl);
   }
 
   .edit-form {
-    padding: 1rem 1.5rem 1.5rem;
+    padding: var(--space-4) var(--space-6) var(--space-6);
   }
 
   .modal-actions {
     flex-direction: column;
     align-items: stretch;
-    gap: 1rem;
+    gap: var(--space-4);
+    padding: var(--space-4) 0 0;
   }
 
   .action-buttons {
@@ -240,30 +278,42 @@
   .delete-btn {
     order: 1;
     width: 100%;
+    justify-content: center;
   }
 
   .cancel-btn,
   .update-btn {
     flex: 1;
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
   .modal-header {
-    padding: 1rem;
+    padding: var(--space-4);
+  }
+
+  .modal-header h2 {
+    font-size: var(--text-lg);
   }
 
   .edit-form {
-    padding: 1rem;
+    padding: var(--space-4);
   }
 
   .action-buttons {
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-3);
   }
 
   .cancel-btn,
   .update-btn {
     width: 100%;
+    justify-content: center;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    font-size: var(--text-sm);
   }
 }

@@ -3,6 +3,8 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import "./RequestForm.css";
+import useToast from "../../hooks/useToast";
+import ToastContainer from "../../components/Toast/ToastContainer";
 
 ///////////// DONE BY ALI AHMED ABOUELSEOUD MOUSTAFA TAHA (TP069502) //////////////////////////////
 
@@ -23,6 +25,7 @@ function RequestForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const user_email = localStorage.getItem("userEmail");
   const user_name = localStorage.getItem("userFullName");
+  const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const regions = [
     { value: "", label: "Select a state" },
@@ -74,7 +77,7 @@ function RequestForm() {
     setIsSubmitting(true);
 
     if (!user_email || !user_name) {
-      alert("User is not logged in. Please log in again.");
+      showError("Authentication Error", "User is not logged in. Please log in again.");
       setIsSubmitting(false);
       return;
     }
@@ -95,14 +98,14 @@ function RequestForm() {
       const result = await response.json();
 
       if (response.ok) {
-        alert("Request submitted successfully!");
+        showSuccess("Request Submitted Successfully!", "Your request has been sent and will be reviewed by our team.");
         setFormData({ region: "", details: "", type: "" });
       } else {
-        alert(result.detail || "Submission failed. Please try again.");
+        showError("Submission Failed", result.detail || "Please check your information and try again.");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Error submitting request. Please try again.");
+      showError("Network Error", "Unable to submit request. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -286,6 +289,8 @@ function RequestForm() {
           </p>
         </div>
       </form>
+
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 }

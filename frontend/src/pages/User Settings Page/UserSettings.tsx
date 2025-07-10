@@ -3,6 +3,8 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import "./UserSettings.css"
+import useToast from "../../hooks/useToast"
+import ToastContainer from "../../components/Toast/ToastContainer"
 
 ///////////// DONE BY ABDUZAFAR MADRAIMOV (TP065584) //////////////////////////////
 
@@ -30,6 +32,7 @@ function UserSettings() {
   const [isLoading, setIsLoading] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { toasts, removeToast, showSuccess, showError } = useToast()
 
 
   useEffect(() => {
@@ -115,15 +118,14 @@ function UserSettings() {
 
 
       if (response.ok) {
-        // Simulate success
-        alert("Settings updated successfully!")
+        showSuccess("Settings Updated Successfully!", "Your profile information has been saved.")
         setHasChanges(false)
       } else {
         throw new Error("Failed to update settings")
       }
     } catch (error) {
       console.error("Error updating settings:", error)
-      alert("Failed to update settings. Please try again.")
+      showError("Update Failed", "Unable to save your settings. Please check your connection and try again.")
     } finally {
       setIsLoading(false)
     }
@@ -297,6 +299,8 @@ function UserSettings() {
           )}
         </form>
       </div>
+
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   )
 }

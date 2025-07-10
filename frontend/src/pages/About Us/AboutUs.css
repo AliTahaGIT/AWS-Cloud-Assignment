@@ -1,157 +1,199 @@
 .about-container {
   max-width: 700px;
-  margin: 40px auto;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 32px 24px;
-  font-family: Arial, sans-serif;
+  margin: var(--space-10) auto;
+  background: var(--surface-primary);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-8) var(--space-6);
+  font-family: var(--font-family);
+  border: 1px solid var(--neutral-200);
+  position: relative;
+  overflow: hidden;
 }
 
 .about-container h1 {
   text-align: center;
-  color: #333;
-  margin-bottom: 32px;
-  font-size: 2rem;
-  font-weight: bold;
+  color: var(--neutral-900);
+  margin-bottom: var(--space-8);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-weight-extrabold);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
 }
 
 .divider {
-  margin: 28px 0 18px 0;
+  margin: var(--space-8) 0 var(--space-5) 0;
   border: none;
-  border-top: 2px solid #e0e0e0;
+  border-top: 2px solid var(--neutral-200);
+  background: var(--gradient-primary);
+  height: 2px;
+  border-top: none;
+  border-radius: var(--radius-full);
 }
 
 .divider:first-of-type {
-  margin: 18px 0 28px 0;
+  margin: var(--space-5) 0 var(--space-8) 0;
 }
 
 .description {
-  font-size: 1.08em;
-  color: #444;
-  line-height: 1.7;
-  margin-bottom: 32px;
+  font-size: var(--text-lg);
+  color: var(--neutral-700);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-8);
   text-align: justify;
+  font-weight: var(--font-weight-medium);
 }
 
 .mission-title {
   text-align: center;
-  color: #2a4d69;
-  margin-bottom: 12px;
-  font-size: 1.5rem;
-  font-weight: bold;
+  color: var(--primary-700);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .mission-description {
-  font-size: 1.08em;
-  color: #444;
-  line-height: 1.7;
-  margin-bottom: 32px;
+  font-size: var(--text-lg);
+  color: var(--neutral-700);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-8);
   text-align: center;
+  font-weight: var(--font-weight-medium);
 }
 
 .members-title {
   text-align: center;
-  color: #2a4d69;
-  margin-bottom: 24px;
-  font-size: 1.5rem;
-  font-weight: bold;
+  color: var(--primary-700);
+  margin-bottom: var(--space-6);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-bold);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .members {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: var(--space-6);
   justify-content: center;
 }
 
 .member {
-  background: #f0f4fa;
-  border-radius: 8px;
-  padding: 20px 28px;
+  background: var(--gradient-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5) var(--space-7);
   min-width: 220px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-md);
   text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--neutral-200);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .member:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-300);
 }
 
 .member-name {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #2a4d69;
-  margin-bottom: 6px;
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--primary-700);
+  margin-bottom: var(--space-2);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .member-role {
-  color: #4f6d7a;
-  font-size: 0.95em;
+  color: var(--neutral-600);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
   .about-container {
-    margin: 20px;
-    padding: 24px 20px;
+    margin: var(--space-5);
+    padding: var(--space-6) var(--space-5);
   }
 
   .about-container h1 {
-    font-size: 1.75rem;
-    margin-bottom: 24px;
+    font-size: var(--text-3xl);
+    margin-bottom: var(--space-6);
+    background: none;
+    color: var(--primary-700);
+    -webkit-text-fill-color: var(--primary-700);
   }
 
   .mission-title,
   .members-title {
-    font-size: 1.3rem;
+    font-size: var(--text-xl);
+    background: none;
+    color: var(--primary-700);
+    -webkit-text-fill-color: var(--primary-700);
   }
 
   .description,
   .mission-description {
-    font-size: 1rem;
+    font-size: var(--text-base);
     text-align: left;
   }
 
   .members {
-    gap: 16px;
+    gap: var(--space-4);
   }
 
   .member {
     min-width: 180px;
-    padding: 16px 20px;
+    padding: var(--space-4) var(--space-5);
   }
 
   .member-name {
-    font-size: 1.1em;
+    font-size: var(--text-lg);
+    background: none;
+    color: var(--primary-700);
+    -webkit-text-fill-color: var(--primary-700);
   }
 
   .member-role {
-    font-size: 0.9em;
+    font-size: var(--text-sm);
   }
 }
 
 @media (max-width: 480px) {
   .about-container {
-    margin: 10px;
-    padding: 20px 16px;
+    margin: var(--space-3);
+    padding: var(--space-5) var(--space-4);
   }
 
   .about-container h1 {
-    font-size: 1.5rem;
+    font-size: var(--text-2xl);
   }
 
   .mission-title,
   .members-title {
-    font-size: 1.2rem;
+    font-size: var(--text-xl);
   }
 
   .description,
   .mission-description {
-    font-size: 0.95em;
-    line-height: 1.6;
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
   }
 
   .members {
@@ -171,6 +213,17 @@
   animation: fadeInUp 0.6s ease-out;
 }
 
+.about-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-hero);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -184,6 +237,23 @@
 
 /* Focus styles for accessibility */
 .member:focus {
-  outline: 2px solid #2a4d69;
+  outline: 2px solid var(--primary-500);
   outline-offset: 2px;
+}
+
+/* Add hover effect to member cards */
+.member::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.member:hover::before {
+  opacity: 1;
 }

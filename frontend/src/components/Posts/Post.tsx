@@ -37,8 +37,10 @@ function Post({
 
   return (
     <div className="post-card" id={id}>
-      <h2 className="post-title">{title}</h2>
-      <p className="post-organization">{organization}</p>
+      <div className="post-header">
+        <h2 className="post-title">{title}</h2>
+        <p className="post-organization">{organization}</p>
+      </div>
       <div className="image-wrapper">
         <img
           src={image}
@@ -47,7 +49,7 @@ function Post({
         />
       </div>
       <div className="post-content">
-        <p className="post-date">📅 {formatDate(date)}</p>
+        <p className="post-date">{formatDate(date)}</p>
         <p className="post-description">{description}</p>
       </div>
     </div>

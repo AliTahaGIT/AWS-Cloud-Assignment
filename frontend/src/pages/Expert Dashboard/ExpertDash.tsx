@@ -7,6 +7,8 @@ import { useParams } from "react-router-dom"
 import "./ExpertDash.css"
 import "../../components/Posts/Post.css"
 import EditPostModal from "../../components/Edit Post Modal/EditPostModal"
+import useToast from "../../hooks/useToast"
+import ToastContainer from "../../components/Toast/ToastContainer"
 
 interface BlogPost {
   title: string
@@ -28,6 +30,7 @@ function ExpertDash() {
   const [loadingPosts, setLoadingPosts] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editingPost, setEditingPost] = useState<any>(null)
+  const { toasts, removeToast, showSuccess, showError } = useToast()
 
   const { name } = useParams<{ name: string }>()
 
@@ -80,7 +83,7 @@ function ExpertDash() {
 
   const submitPostToServer = async () => {
     if (!formData.image) {
-      alert("Please upload an image.")
+      showError("Image Required", "Please upload an image for your post.")
       return
     }
 
@@ -99,12 +102,12 @@ function ExpertDash() {
       })
       const result = await res.json()
       if (res.ok) {
-        alert("Post created successfully!")
+        showSuccess("Post Created Successfully!", "Your blog post has been published and is now live.")
       } else {
-        alert("Error: " + result.detail || "Something went wrong.")
+        showError("Failed to Create Post", result.detail || "Something went wrong while creating the post.")
       }
     } catch (err) {
-      alert("Network error: " + err)
+      showError("Network Error", "Unable to create post. Please check your connection and try again.")
     }
   }
 
@@ -139,17 +142,17 @@ function ExpertDash() {
       })
 
       if (res.ok) {
-        alert("Post updated successfully!")
+        showSuccess("Post Updated Successfully!", "Your blog post has been updated.")
         // Refresh the posts list
         const updatedRes = await fetch(`${import.meta.env.VITE_API_URL}/org-posts?organization=${name}`)
         const updatedData = await updatedRes.json()
         setOrgPosts(updatedData)
       } else {
         const error = await res.json()
-        alert("Error updating post: " + (error.detail || "Something went wrong."))
+        showError("Failed to Update Post", error.detail || "Something went wrong while updating the post.")
       }
     } catch (err) {
-      alert("Network error: " + err)
+      showError("Network Error", "Unable to update post. Please check your connection and try again.")
     }
   }
 
@@ -163,14 +166,14 @@ function ExpertDash() {
       })
 
       if (res.ok) {
-        alert("Post deleted successfully!")
+        showSuccess("Post Deleted Successfully!", "Your blog post has been removed.")
         window.location.reload();
       } else {
         const error = await res.json()
-        alert("Error deleting post: " + (error.detail || "Something went wrong."))
+        showError("Failed to Delete Post", error.detail || "Something went wrong while deleting the post.")
       }
     } catch (err) {
-      alert("Network error: " + err)
+      showError("Network Error", "Unable to delete post. Please check your connection and try again.")
     }
   }
 
@@ -373,6 +376,8 @@ function ExpertDash() {
         onUpdate={handleUpdatePost}
         onDelete={handleDeletePost}
       />
+
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   )
 }

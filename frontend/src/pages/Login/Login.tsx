@@ -3,6 +3,8 @@
 import type React from "react";
 import { useState } from "react";
 import "./Login.css";
+import useToast from "../../hooks/useToast";
+import ToastContainer from "../../components/Toast/ToastContainer";
 
 ///////////// DONE BY AHMED MOHAMED AHMED ABDELGADIR (TP070007) //////////////////////////////
 
@@ -23,6 +25,7 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const [loginData, setLoginData] = useState<LoginData>({
     role: "",
@@ -83,7 +86,7 @@ function Login() {
       const result = await response.json();
 
       if (response.ok) {
-        alert("Login successful!");
+        showSuccess("Login Successful!", `Welcome back! Redirecting to your dashboard...`);
 
         const fullName = result.fullName;
         const email = result.email;
@@ -92,22 +95,24 @@ function Login() {
 
         console.log(img)
 
-        if (loginData.role === "user") {
-          localStorage.setItem("userEmail", email);
-          localStorage.setItem("userFullName", fullName);
-          localStorage.setItem("userIMG", img);
-          localStorage.setItem("userID", userID);
-          window.location.href = `/`;
-        } else {
-          localStorage.setItem("expertFullName", fullName);
-          window.location.href = `/ExpertDash/${fullName}`;
-        }
+        setTimeout(() => {
+          if (loginData.role === "user") {
+            localStorage.setItem("userEmail", email);
+            localStorage.setItem("userFullName", fullName);
+            localStorage.setItem("userIMG", img);
+            localStorage.setItem("userID", userID);
+            window.location.href = `/`;
+          } else {
+            localStorage.setItem("expertFullName", fullName);
+            window.location.href = `/ExpertDash/${fullName}`;
+          }
+        }, 1500);
       } else {
-        alert(result.detail || "Login failed. Please try again.");
+        showError("Login Failed", result.detail || "Please check your credentials and try again.");
       }
     } catch (error) {
       console.error("Login error:", error);
-      alert("Login failed. Please try again.");
+      showError("Network Error", "Unable to connect to the server. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -120,23 +125,23 @@ function Login() {
     const { fullName, email, password, confirmPassword, role } = signupData;
 
     if (!fullName || !email || !password || !confirmPassword) {
-      alert("All fields are required.");
+      showError("Missing Information", "All fields are required to create an account.");
       return;
     }
 
     const emailPattern = /^[^@]+@[^@]+\.[^@]+$/;
     if (!emailPattern.test(email)) {
-      alert("Invalid email format.");
+      showError("Invalid Email", "Please enter a valid email address.");
       return;
     }
 
     if (password.length < 6) {
-      alert("Password must be at least 6 characters long.");
+      showError("Weak Password", "Password must be at least 6 characters long.");
       return;
     }
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+      showError("Password Mismatch", "Passwords do not match. Please check and try again.");
       return;
     }
 
@@ -158,7 +163,7 @@ function Login() {
       const result = await response.json();
 
       if (response.ok) {
-        alert("Account created successfully! Please login.");
+        showSuccess("Account Created Successfully!", "Welcome to Cloud60! You can now log in with your credentials.");
         setIsLogin(true);
         setSignupData({
           role: "",
@@ -168,11 +173,11 @@ function Login() {
           fullName: "",
         });
       } else {
-        alert(result.error || "Signup failed.");
+        showError("Signup Failed", result.error || "Unable to create account. Please try again.");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      alert("Signup failed. Please try again.");
+      showError("Network Error", "Unable to connect to the server. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -661,6 +666,8 @@ function Login() {
             Admin Login
           </button>
         </div>
+
+        <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
       </div>
     </div>
   );

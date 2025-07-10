@@ -4,6 +4,8 @@
  */
 import React, { useState, useEffect } from 'react';
 import './NotificationsManager.css';
+import useToast from '../../hooks/useToast';
+import ToastContainer from '../Toast/ToastContainer';
 
 interface FloodNotification {
   notification_id: string;
@@ -39,6 +41,7 @@ const NotificationsManager: React.FC = () => {
   const [filterSeverity, setFilterSeverity] = useState<string>('');
   const [filterRegion, setFilterRegion] = useState<string>('');
   const [adminKey] = useState(localStorage.getItem('admin_key') || '');
+  const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const regions = [
     'Johor', 'Kedah', 'Kelantan', 'Kuala Lumpur', 'Labuan', 'Malacca', 'Negeri Sembilan', 
@@ -99,17 +102,18 @@ const NotificationsManager: React.FC = () => {
 
       if (response.ok) {
         console.log('Notification created successfully');
+        showSuccess('Notification Created', 'Flood notification has been created and published successfully.');
         await fetchNotifications();
         setShowCreateModal(false);
         resetForm();
       } else {
         const errorData = await response.json();
         console.error('Error creating notification:', response.status, errorData);
-        alert(`Error creating notification: ${errorData.detail || 'Unknown error'}`);
+        showError('Creation Failed', errorData.detail || 'Unable to create notification. Please try again.');
       }
     } catch (error) {
       console.error('Error creating notification:', error);
-      alert('Error creating notification. Please try again.');
+      showError('Network Error', 'Unable to connect to the server. Please check your connection and try again.');
     }
   };
 
@@ -449,6 +453,8 @@ const NotificationsManager: React.FC = () => {
           </div>
         </div>
       )}
+
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 };
