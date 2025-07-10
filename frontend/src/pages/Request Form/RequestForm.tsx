@@ -226,7 +226,7 @@ function RequestForm() {
         {/* Submit Button */}
         <button
           type="submit"
-          className={`submit-button ${!isFormValid ? "disabled" : ""}`}
+          className={`btn btn-primary btn-large ${!isFormValid ? "disabled" : ""}`}
           disabled={!isFormValid || isSubmitting}
         >
           {isSubmitting ? (

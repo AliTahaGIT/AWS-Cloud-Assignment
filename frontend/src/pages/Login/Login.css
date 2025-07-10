@@ -4,18 +4,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  padding: var(--spacing-xl) var(--spacing-md);
 }
 
 .login-card {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-  padding: 3rem 2.5rem;
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  padding: var(--spacing-2xl) var(--spacing-xl);
   width: 100%;
   max-width: 450px;
-  animation: slideInUp 0.6s ease-out;
+  animation: slideInUp var(--transition-slow) ease-out;
 }
 
 @keyframes slideInUp {
@@ -31,44 +30,45 @@
 
 .login-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-xl);
 }
 
 .login-header h1 {
-  font-size: 2.25rem;
+  font-size: var(--font-size-3xl);
   font-weight: 700;
-  color: #2c3e50;
-  margin-bottom: 0.5rem;
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-sm);
 }
 
 .login-header p {
-  color: #7f8c8d;
-  font-size: 1rem;
+  color: var(--color-gray-500);
+  font-size: var(--font-size-base);
 }
 
 .form-toggle {
   display: flex;
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 0.25rem;
-  margin-bottom: 2rem;
+  background: var(--color-gray-100);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xs);
+  margin-bottom: var(--spacing-xl);
 }
 
 .toggle-btn {
   flex: 1;
-  padding: 0.75rem 1rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   border: none;
   background: transparent;
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
-  color: #6c757d;
+  transition: all var(--transition-base);
+  color: var(--color-gray-600);
+  font-family: var(--font-primary);
 }
 
 .toggle-btn.active {
-  background: #007bff;
-  color: white;
+  background: var(--color-primary);
+  color: var(--color-white);
   box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
 }
 
@@ -80,7 +80,7 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-lg);
 }
 
 .form-group {
@@ -91,47 +91,47 @@
 .form-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-  color: #2c3e50;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-dark);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: var(--font-size-sm);
 }
 
 .label-icon {
   width: 18px;
   height: 18px;
-  color: #007bff;
+  color: var(--color-primary);
 }
 
 .form-input,
 .form-select {
-  padding: 1rem 1.25rem;
-  border: 2px solid #e9ecef;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-family: inherit;
-  transition: all 0.3s ease;
-  background: #fafbfc;
+  padding: var(--spacing-md) var(--spacing-md);
+  border: 2px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  font-family: var(--font-primary);
+  transition: all var(--transition-base);
+  background: var(--color-gray-100);
 }
 
 .form-input:focus,
 .form-select:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.1);
-  background: white;
+  background: var(--color-white);
 }
 
 .form-input:disabled,
 .form-select:disabled {
-  background-color: #f8f9fa;
+  background-color: var(--color-gray-100);
   cursor: not-allowed;
   opacity: 0.7;
 }
 
 .form-input.error {
-  border-color: #dc3545;
+  border-color: var(--color-danger);
   background: #fff5f5;
 }
 
@@ -157,18 +157,18 @@
 
 .password-toggle {
   position: absolute;
-  right: 1rem;
+  right: var(--spacing-md);
   background: none;
   border: none;
-  color: #6c757d;
+  color: var(--color-gray-600);
   cursor: pointer;
-  padding: 0.25rem;
-  border-radius: 4px;
-  transition: color 0.2s ease;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
 }
 
 .password-toggle:hover:not(:disabled) {
-  color: #007bff;
+  color: var(--color-primary);
 }
 
 .password-toggle:disabled {
@@ -182,34 +182,35 @@
 }
 
 .error-message {
-  color: #dc3545;
-  font-size: 0.85rem;
-  margin-top: 0.5rem;
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--spacing-xs);
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: var(--color-white);
   border: none;
-  padding: 1.25rem 2rem;
-  border-radius: 12px;
-  font-size: 1.1rem;
+  padding: var(--spacing-md) var(--spacing-xl);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-lg);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  font-family: var(--font-primary);
 }
 
 .submit-button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .submit-button:active:not(:disabled) {
@@ -218,7 +219,7 @@
 
 .submit-button.disabled,
 .submit-button:disabled {
-  background: #6c757d;
+  background: var(--color-gray-600);
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -249,29 +250,30 @@
 
 .auth-footer {
   text-align: center;
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid #e9ecef;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px solid var(--color-gray-200);
 }
 
 .auth-footer p {
-  color: #6c757d;
-  font-size: 0.95rem;
+  color: var(--color-gray-600);
+  font-size: var(--font-size-sm);
 }
 
 .link-button {
   background: none;
   border: none;
-  color: #007bff;
+  color: var(--color-primary);
   font-weight: 600;
   cursor: pointer;
   text-decoration: underline;
   font-size: inherit;
   padding: 0;
+  font-family: var(--font-primary);
 }
 
 .link-button:hover:not(:disabled) {
-  color: #0056b3;
+  color: var(--color-primary-hover);
 }
 
 .link-button:disabled {
@@ -282,22 +284,22 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .login-container {
-    padding: 1rem 0.5rem;
+    padding: var(--spacing-md) var(--spacing-sm);
   }
 
   .login-card {
-    padding: 2rem 1.5rem;
+    padding: var(--spacing-xl) var(--spacing-lg);
     max-width: 400px;
   }
 
   .login-header h1 {
-    font-size: 2rem;
+    font-size: var(--font-size-2xl);
   }
 
   .form-input,
   .form-select {
-    padding: 0.875rem 1rem;
-    font-size: 0.95rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
   }
 
   .password-input-wrapper .form-input {
@@ -305,34 +307,34 @@
   }
 
   .password-toggle {
-    right: 0.75rem;
+    right: var(--spacing-sm);
   }
 
   .submit-button {
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-base);
   }
 }
 
 @media (max-width: 480px) {
   .login-card {
-    padding: 1.5rem 1rem;
-    margin: 0.5rem;
+    padding: var(--spacing-lg) var(--spacing-md);
+    margin: var(--spacing-sm);
   }
 
   .login-header h1 {
-    font-size: 1.75rem;
+    font-size: var(--font-size-xl);
   }
 
   .form-input,
   .form-select {
-    padding: 0.75rem;
-    font-size: 0.9rem;
+    padding: var(--spacing-sm);
+    font-size: var(--font-size-sm);
   }
 
   .submit-button {
-    padding: 0.875rem 1rem;
-    font-size: 0.95rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: var(--font-size-sm);
   }
 }
 
@@ -342,12 +344,12 @@
 .submit-button:focus,
 .toggle-btn:focus,
 .password-toggle:focus {
-  outline: 2px solid #007bff;
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
 
 /* Hover effects for better UX */
 .form-input:hover:not(:disabled),
 .form-select:hover:not(:disabled) {
-  border-color: #007bff;
+  border-color: var(--color-primary);
 }
