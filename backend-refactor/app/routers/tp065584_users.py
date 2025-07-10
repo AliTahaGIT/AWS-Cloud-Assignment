@@ -79,8 +79,16 @@ async def update_user_profile(
             ExpressionAttributeValues=expr_values
         )
 
+        updated_response = users_table.get_item(Key={"user_id": user_id})
+        updated_user = updated_response.get("Item", {})
+        
         return {
-            "message": "Profile updated successfully!"
+            "message": "Profile updated successfully!",
+            "user": {
+                "fullName": updated_user.get("username"),
+                "email": updated_user.get("email"),
+                "avatar_url": updated_user.get("S3_URL")
+            }
         }
 
     except Exception as e:
