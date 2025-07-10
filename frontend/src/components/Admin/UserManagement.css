@@ -323,6 +323,41 @@
   padding: var(--space-8) 0;
 }
 
+/* Delete Confirmation Modal */
+.delete-confirmation {
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.delete-confirmation p {
+  font-size: var(--text-lg);
+  color: var(--neutral-700);
+  margin-bottom: var(--space-6);
+  font-weight: var(--font-weight-medium);
+}
+
+.user-info {
+  background: var(--error-50);
+  border: 1px solid var(--error-200);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  margin: var(--space-4) 0;
+  text-align: left;
+}
+
+.user-info p {
+  margin: var(--space-2) 0;
+  font-size: var(--text-base);
+  color: var(--neutral-800);
+}
+
+.user-info strong {
+  color: var(--error-700);
+  font-weight: var(--font-weight-semibold);
+  display: inline-block;
+  min-width: 80px;
+}
+
 /* Form Styles */
 .edit-form,
 .password-form,
