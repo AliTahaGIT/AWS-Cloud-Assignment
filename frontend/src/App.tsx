@@ -9,6 +9,8 @@ import RequestForm from "./pages/Request Form/RequestForm"
 import Login from "./pages/Login/Login"
 import UserSettings from "./pages/User Settings Page/UserSettings"
 import UserDash from "./pages/User Dashboard/UserDash"
+import AdminDash from "./pages/Admin Dashboard/AdminDash"
+import AdminLogin from "./pages/Admin Login/AdminLogin"
 
 // Components
 function Home() {
@@ -65,6 +67,22 @@ function Userdash(){
   )
 }
 
+function AdminDashboard(){
+  return (
+    <>
+    <AdminDash/>
+    </>
+  )
+}
+
+function AdminLoginPage(){
+  return (
+    <>
+    <AdminLogin/>
+    </>
+  )
+}
+
 
 function App() {
   return (
@@ -77,6 +95,10 @@ function App() {
         <Route path="/login" element={<LogIN />} />
         <Route path="/UserSettings" element={<Usersettings />} />
         <Route path="/UserDash" element={<Userdash />} />
+
+        {/* Admin routes */}
+        <Route path="/admin-login" element={<AdminLoginPage />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
         {/* Expert Dashboard route with name parameter */}
         <Route path="/ExpertDash/:name" element={<ExpertDash />} />

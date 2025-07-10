@@ -1,0 +1,542 @@
+/*
+ * Contacts Manager Styles
+ * Author: Amir (TP070572)
+ */
+.contacts-manager {
+  padding: var(--spacing-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.manager-header {
+  text-align: center;
+  margin-bottom: var(--spacing-2xl);
+}
+
+.manager-header h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: 700;
+  color: var(--color-dark);
+  margin-bottom: var(--spacing-sm);
+}
+
+.manager-header p {
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-600);
+  margin: 0;
+}
+
+.manager-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.manager-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.manager-actions .btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.filters {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.filters .form-select {
+  min-width: 150px;
+}
+
+/* Loading (inherited from NotificationsManager) */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-3xl);
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-gray-300);
+  border-top: 4px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  animation: spin 1s linear infinite;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Contacts Grid */
+.contacts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.contact-card {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  border-left: 5px solid var(--color-primary);
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.contact-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.contact-card.inactive {
+  opacity: 0.6;
+  border-left-color: var(--color-gray-400);
+}
+
+.contact-card.inactive::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 0, 0, 0.05) 10px,
+    rgba(0, 0, 0, 0.05) 20px
+  );
+  border-radius: var(--radius-xl);
+  pointer-events: none;
+}
+
+/* Contact Header */
+.contact-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+  position: relative;
+}
+
+.contact-avatar {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-avatar svg {
+  width: 30px;
+  height: 30px;
+  color: var(--color-white);
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-info h3 {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.contact-role {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+  margin: 0 0 var(--spacing-sm) 0;
+  line-height: 1.4;
+}
+
+.region-badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+/* Malaysian States - Color coded by region */
+.region-badge.johor {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.region-badge.kedah {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.region-badge.kelantan {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.region-badge.kuala_lumpur {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.region-badge.labuan {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.region-badge.malacca {
+  background: #fce4ec;
+  color: #ad1457;
+}
+
+.region-badge.negeri_sembilan {
+  background: #e0f2f1;
+  color: #00695c;
+}
+
+.region-badge.pahang {
+  background: #f1f8e9;
+  color: #558b2f;
+}
+
+.region-badge.penang {
+  background: #e8eaf6;
+  color: #3f51b5;
+}
+
+.region-badge.perak {
+  background: #fff8e1;
+  color: #ff8f00;
+}
+
+.region-badge.perlis {
+  background: #fafafa;
+  color: #424242;
+}
+
+.region-badge.putrajaya {
+  background: #e1f5fe;
+  color: #0277bd;
+}
+
+.region-badge.sabah {
+  background: #f9fbe7;
+  color: #689f38;
+}
+
+.region-badge.sarawak {
+  background: #fff9c4;
+  color: #f57f17;
+}
+
+.region-badge.selangor {
+  background: #e8f5e8;
+  color: #388e3c;
+}
+
+.region-badge.terengganu {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.inactive {
+  background: var(--color-gray-500);
+  color: var(--color-white);
+}
+
+/* Contact Details */
+.contact-details {
+  margin-bottom: var(--spacing-lg);
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--color-gray-50);
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-base);
+}
+
+.contact-item:hover {
+  background: var(--color-gray-100);
+}
+
+.contact-item svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.contact-item span {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+  font-weight: 500;
+}
+
+/* Contact Meta */
+.contact-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-md);
+}
+
+.contact-meta span {
+  font-style: italic;
+}
+
+/* Card Actions */
+.card-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  justify-content: flex-end;
+}
+
+.card-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+.card-actions .btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Empty State */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--spacing-3xl);
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.empty-state svg {
+  width: 80px;
+  height: 80px;
+  color: var(--color-gray-400);
+  margin-bottom: var(--spacing-lg);
+}
+
+.empty-state h3 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-gray-700);
+  margin-bottom: var(--spacing-sm);
+}
+
+.empty-state p {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-500);
+  margin: 0;
+}
+
+/* Modal Styles (inherited from NotificationsManager) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  padding: var(--spacing-lg);
+}
+
+.modal-content {
+  background: var(--color-white);
+  border-radius: var(--radius-xl);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl);
+  animation: slideInUp var(--transition-slow) ease-out;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-xl) var(--spacing-xl) var(--spacing-lg) var(--spacing-xl);
+  border-bottom: 1px solid var(--color-gray-200);
+}
+
+.modal-header h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-dark);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--color-gray-500);
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-base);
+}
+
+.modal-close:hover {
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+}
+
+.modal-close svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Form Styles */
+.contact-form {
+  padding: var(--spacing-xl);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contacts-manager {
+    padding: var(--spacing-md);
+  }
+
+  .manager-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters {
+    justify-content: center;
+  }
+
+  .contacts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--spacing-md);
+  }
+
+  .contact-info {
+    text-align: center;
+  }
+
+  .status-badge {
+    position: static;
+    align-self: center;
+  }
+
+  .contact-meta {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .card-actions {
+    justify-content: center;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding: var(--spacing-md);
+  }
+
+  .modal-content {
+    margin: 0;
+  }
+
+  .filters {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .filters .form-select {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .contact-card {
+    padding: var(--spacing-lg);
+  }
+
+  .contact-avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .contact-avatar svg {
+    width: 24px;
+    height: 24px;
+  }
+}
