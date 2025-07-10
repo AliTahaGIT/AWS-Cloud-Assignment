@@ -84,11 +84,11 @@ function ExpertDash() {
       return
     }
 
-    const orgName = name || "Unknown" // fallback just in case
+    const orgName = name || "Org"; // From login params
 
     const data = new FormData()
     data.append("Post_Title", formData.title)
-    data.append("Post_Organization", orgName) // From Login, But for Now Hard Coded
+    data.append("Post_Organization", orgName) 
     data.append("Post_Desc", formData.description)
     data.append("image", formData.image)
 
