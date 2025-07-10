@@ -1,9 +1,13 @@
 import "./AboutUs.css"
 
+//Author: AHMED MOHAMED AHMED ABDELGADIR (TP070007)
+
 interface Member {
   name: string
   role: string
 }
+
+
 
 function AboutUs() {
   const members: Member[] = [
@@ -12,7 +16,7 @@ function AboutUs() {
       role: "Developer",
     },
     {
-      name: "Madraimov Abduzafar",
+      name: "Abduzafar Madraimov ",
       role: "Developer",
     },
     {
@@ -20,7 +24,7 @@ function AboutUs() {
       role: "Developer & Group Leader",
     },
     {
-      name: "Amir Karim",
+      name: "Amir",
       role: "Developer",
     },
   ]
