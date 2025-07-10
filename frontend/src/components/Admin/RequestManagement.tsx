@@ -338,7 +338,7 @@ const RequestManagement: React.FC = () => {
                   <div className="detail-item">
                     <label>Status:</label>
                     <span className={`status-badge ${getStatusColor(selectedRequest.status)}`}>
-                      {selectedRequest.status.replace('_', ' ').toUpperCase()}
+                      {(selectedRequest.status || 'pending').replace('_', ' ').toUpperCase()}
                     </span>
                   </div>
                   <div className="detail-item">
@@ -405,7 +405,7 @@ const RequestManagement: React.FC = () => {
                   className="btn btn-primary"
                   onClick={() => {
                     setShowDetailsModal(false);
-                    setNewStatus(selectedRequest.status);
+                    setNewStatus(selectedRequest.status || 'pending');
                     setShowStatusModal(true);
                   }}
                 >

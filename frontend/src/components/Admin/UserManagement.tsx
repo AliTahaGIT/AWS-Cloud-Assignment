@@ -9,6 +9,7 @@ interface User {
   username: string;
   email: string;
   role: string;
+  full_name?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -119,7 +120,7 @@ const UserManagement: React.FC = () => {
   const openEditModal = (user: User) => {
     setSelectedUser(user);
     setEditFormData({
-      full_name: user.username,
+      full_name: user.full_name || user.username,
       email: user.email
     });
     setShowEditModal(true);

@@ -231,7 +231,6 @@ function MainPage() {
                 date={post.Post_CreateDate}
                 image={post.Post_IMG}
                 organization={post.Post_Organization}
-                S3Key={post.Post_S3Key}
                 onClick={() => handlePostClick(post)}
               />
             ))}

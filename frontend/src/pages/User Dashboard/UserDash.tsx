@@ -223,7 +223,7 @@ function UserDash() {
       ) : (
         <div className="requests-container">
           {requests.map((request) => {
-            const { date, time } = formatDateTime(request.dateTime)
+            const { date } = formatDateTime(request.dateTime)
             return (
               <div key={request.id} className="request-card">
                 <div className="card-header">

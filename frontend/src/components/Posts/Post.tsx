@@ -10,7 +10,6 @@ interface PostProps {
   date: string;
   image: string;
   organization: string;
-  S3Key: string;
   onClick?: () => void;
 }
 
@@ -21,7 +20,6 @@ function Post({
   date,
   image,
   organization,
-  S3Key,
   onClick,
 }: PostProps) {
   // Format the date to match your existing format

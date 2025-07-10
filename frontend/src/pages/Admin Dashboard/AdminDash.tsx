@@ -19,7 +19,6 @@ const AdminDash: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'notifications' | 'users' | 'requests' | 'announcements'>('dashboard');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(false);
-  const [adminKey, setAdminKey] = useState<string>('');
   const [adminName, setAdminName] = useState<string>('');
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
@@ -32,7 +31,6 @@ const AdminDash: React.FC = () => {
       return;
     }
     
-    setAdminKey(storedAdminKey);
     setAdminName(storedAdminName || 'Admin');
     
     // Fetch data only after authentication is verified
