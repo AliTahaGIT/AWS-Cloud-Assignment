@@ -118,8 +118,22 @@ function UserSettings() {
 
 
       if (response.ok) {
+        const data = await response.json()
         showSuccess("Settings Updated Successfully!", "Your profile information has been saved.")
         setHasChanges(false)
+        
+        if (data.user) {
+          if (data.user.fullName) {
+            localStorage.setItem("userFullName", data.user.fullName)
+          }
+          if (data.user.email) {
+            localStorage.setItem("userEmail", data.user.email)
+          }
+          if (data.user.avatar_url) {
+            localStorage.setItem("userIMG", data.user.avatar_url)
+            setAvatarPreview(data.user.avatar_url)
+          }
+        }
       } else {
         throw new Error("Failed to update settings")
       }
