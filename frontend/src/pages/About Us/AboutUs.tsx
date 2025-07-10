@@ -31,24 +31,11 @@ function AboutUs() {
       <hr className="divider" />
 
       <p className="description">
-        We are Group 60 in Cloud Engineering and our solution addresses Problem Statement 4: a real-time flood alerting
-        platform. Our platform leverages available APIs to provide up-to-date flood information, alerting communities
-        and authorities to potential risks. With a focus on reliability, accessibility, and real-time data, we aim to
-        make flood response faster and more effective. Our system integrates multiple data sources, offers user-friendly
-        interfaces, and is designed to scale for use in diverse environments.
+        We’re Group 60 from Cloud Engineering, and our project solves Problem Statement 4 by building a real-time flood alert system. Our platform uses different APIs to give the latest flood updates, helping communities and authorities stay informed and respond quickly. We’ve focused on making it reliable, easy to use, and able to handle different situations. It brings together data from various sources, has a simple interface, and can be scaled to work in many areas.
       </p>
 
       <hr className="divider" />
 
-      <h2 className="mission-title">OUR MISSION</h2>
-      <p className="mission-description">
-        Our mission is to create a comprehensive solution for flooding reports, empowering communities to respond
-        quickly and efficiently to flood threats. By combining real-time data, advanced analytics, and intuitive user
-        experiences, we strive to minimize the impact of floods and help save lives and property. We are committed to
-        innovation, collaboration, and making a positive difference in disaster management.
-      </p>
-
-      <hr className="divider" />
 
       <h2 className="members-title">Members</h2>
       <div className="members">
