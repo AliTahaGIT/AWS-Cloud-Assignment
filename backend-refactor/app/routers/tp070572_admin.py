@@ -532,7 +532,6 @@ async def delete_user(
 @router.get("/requests/all")
 async def get_all_requests(
     status: Optional[str] = Query(None),
-    priority: Optional[str] = Query(None),
     region: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     limit: int = Query(100),
@@ -547,18 +546,15 @@ async def get_all_requests(
         if status:
             requests = [r for r in requests if r.get('status') == status]
         
-        if priority:
-            requests = [r for r in requests if r.get('priority') == priority]
-        
         if region:
-            requests = [r for r in requests if r.get('location', '').lower().find(region.lower()) != -1]
+            requests = [r for r in requests if r.get('req_region', '').lower().find(region.lower()) != -1]
         
         if search:
             search_lower = search.lower()
             requests = [r for r in requests if (
                 search_lower in r.get('user_name', '').lower() or
-                search_lower in r.get('description', '').lower() or
-                search_lower in r.get('location', '').lower()
+                search_lower in r.get('req_details', '').lower() or
+                search_lower in r.get('req_region', '').lower()
             )]
         
         # Sort by creation date

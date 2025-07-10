@@ -14,7 +14,6 @@ interface Request {
   req_region?: string;
   location?: string;
   description?: string;
-  priority?: 'low' | 'medium' | 'high' | 'critical';
   status?: 'pending' | 'in_progress' | 'resolved' | 'cancelled';
   created_at: string;
   updated_at?: string;
@@ -41,7 +40,6 @@ const RequestManagement: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('');
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -56,7 +54,6 @@ const RequestManagement: React.FC = () => {
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const statusOptions = ['pending', 'in_progress', 'resolved', 'cancelled'];
-  const priorityOptions = ['low', 'medium', 'high', 'critical'];
 
   const fetchRequests = async () => {
     if (!adminKey) return;
@@ -66,7 +63,6 @@ const RequestManagement: React.FC = () => {
       let url = `http://localhost:8000/admin/requests/all?admin_key=${adminKey}`;
       
       if (statusFilter) url += `&status=${statusFilter}`;
-      if (priorityFilter) url += `&priority=${priorityFilter}`;
       if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
 
       const response = await fetch(url);
@@ -182,16 +178,6 @@ const RequestManagement: React.FC = () => {
     }
   };
 
-  const getPriorityColor = (priority?: string) => {
-    if (!priority) return '';
-    switch (priority) {
-      case 'critical': return 'priority-critical';
-      case 'high': return 'priority-high';
-      case 'medium': return 'priority-medium';
-      case 'low': return 'priority-low';
-      default: return '';
-    }
-  };
 
   const getStatusColor = (status?: string) => {
     if (!status) return 'status-pending';
@@ -207,7 +193,7 @@ const RequestManagement: React.FC = () => {
   useEffect(() => {
     fetchRequests();
     fetchExperts();
-  }, [searchTerm, statusFilter, priorityFilter]);
+  }, [searchTerm, statusFilter]);
 
   return (
     <div className="request-management">
@@ -241,25 +227,12 @@ const RequestManagement: React.FC = () => {
             ))}
           </select>
 
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="filter-select"
-          >
-            <option value="">All Priorities</option>
-            {priorityOptions.map(priority => (
-              <option key={priority} value={priority}>
-                {priority.charAt(0).toUpperCase() + priority.slice(1)}
-              </option>
-            ))}
-          </select>
 
           <button 
             className="btn btn-secondary"
             onClick={() => {
               setSearchTerm('');
               setStatusFilter('');
-              setPriorityFilter('');
             }}
           >
             Clear Filters
@@ -282,11 +255,6 @@ const RequestManagement: React.FC = () => {
                   <p className="request-location">{request.req_region || request.location || 'No location'}</p>
                 </div>
                 <div className="request-badges">
-                  {request.priority && (
-                    <span className={`priority-badge ${getPriorityColor(request.priority)}`}>
-                      {request.priority.toUpperCase()}
-                    </span>
-                  )}
                   <span className={`status-badge ${getStatusColor(request.status || 'pending')}`}>
                     {(request.status || 'pending').replace('_', ' ').toUpperCase()}
                   </span>
@@ -366,18 +334,8 @@ const RequestManagement: React.FC = () => {
                     <span>{selectedRequest.user_name}</span>
                   </div>
                   <div className="detail-item">
-                    <label>Phone Number:</label>
-                    <span>{selectedRequest.phone_number}</span>
-                  </div>
-                  <div className="detail-item">
-                    <label>Location:</label>
-                    <span>{selectedRequest.location}</span>
-                  </div>
-                  <div className="detail-item">
-                    <label>Priority:</label>
-                    <span className={`priority-badge ${getPriorityColor(selectedRequest.priority)}`}>
-                      {selectedRequest.priority.toUpperCase()}
-                    </span>
+                    <label>Region:</label>
+                    <span>{selectedRequest.req_region}</span>
                   </div>
                   <div className="detail-item">
                     <label>Status:</label>
@@ -399,8 +357,8 @@ const RequestManagement: React.FC = () => {
               </div>
 
               <div className="detail-section">
-                <h3>Description</h3>
-                <p className="description-text">{selectedRequest.description}</p>
+                <h3>Details</h3>
+                <p className="description-text">{selectedRequest.req_details}</p>
               </div>
 
               {selectedRequest.admin_note && (

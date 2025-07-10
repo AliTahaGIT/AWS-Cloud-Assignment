@@ -117,13 +117,6 @@
   background: var(--neutral-50);
 }
 
-.users-table tbody tr.banned-row {
-  background: rgba(239, 68, 68, 0.05);
-}
-
-.users-table tbody tr.banned-row:hover {
-  background: rgba(239, 68, 68, 0.1);
-}
 
 .users-table td {
   padding: var(--space-4) var(--space-5);
@@ -172,10 +165,6 @@
   color: var(--success-700);
 }
 
-.status-badge.banned {
-  background: var(--error-100);
-  color: var(--error-700);
-}
 
 /* Action Buttons */
 .action-buttons {

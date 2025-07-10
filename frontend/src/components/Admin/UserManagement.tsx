@@ -8,9 +8,7 @@ interface User {
   user_id: string;
   username: string;
   email: string;
-  full_name?: string;
   role: string;
-  is_banned?: boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -22,7 +20,6 @@ const UserManagement: React.FC = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [showBanModal, setShowBanModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
   const [adminKey] = useState(localStorage.getItem('admin_key') || '');
@@ -54,23 +51,6 @@ const UserManagement: React.FC = () => {
   };
 
 
-  const handleDeleteUser = async () => {
-    if (!selectedUser) return;
-
-    const response = await fetch(
-      `http://localhost:8000/admin/users/${selectedUser.user_id}?admin_key=${adminKey}`,
-      { method: 'DELETE' }
-    );
-
-    if (response.ok) {
-      showSuccess('Success', 'User deleted');
-      fetchUsers();
-      setShowBanModal(false);
-      setSelectedUser(null);
-    } else {
-      showError('Error', 'Failed to delete user');
-    }
-  };
 
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword) return;
@@ -117,10 +97,29 @@ const UserManagement: React.FC = () => {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+
+    try {
+      const response = await fetch(`http://localhost:8000/admin/users/${userId}?admin_key=${adminKey}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        showSuccess('Success', 'User deleted');
+        fetchUsers();
+      } else {
+        showError('Error', 'Failed to delete user');
+      }
+    } catch (error) {
+      showError('Network Error', 'Unable to delete user');
+    }
+  };
+
   const openEditModal = (user: User) => {
     setSelectedUser(user);
     setEditFormData({
-      username: user.username,
+      full_name: user.username,
       email: user.email
     });
     setShowEditModal(true);
@@ -192,8 +191,8 @@ const UserManagement: React.FC = () => {
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.user_id} className={user.is_banned ? 'banned-row' : ''}>
-                  <td>{user.full_name || user.username}</td>
+                <tr key={user.user_id}>
+                  <td>{user.username}</td>
                   <td>{user.email}</td>
                   <td>{user.username}</td>
                   <td>
@@ -202,11 +201,7 @@ const UserManagement: React.FC = () => {
                     </span>
                   </td>
                   <td>
-                    {user.is_banned ? (
-                      <span className="status-badge banned">BANNED</span>
-                    ) : (
-                      <span className="status-badge active">ACTIVE</span>
-                    )}
+                    <span className="status-badge active">ACTIVE</span>
                   </td>
                   <td>
                     <div className="action-buttons">
@@ -235,10 +230,7 @@ const UserManagement: React.FC = () => {
                         <button
                           className="btn-icon ban"
                           title="Delete User"
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setShowBanModal(true);
-                          }}
+                          onClick={() => deleteUser(user.user_id)}
                         >
                           <svg viewBox="0 0 24 24" fill="currentColor">
                             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
@@ -279,11 +271,11 @@ const UserManagement: React.FC = () => {
 
             <form className="edit-form" onSubmit={(e) => { e.preventDefault(); handleUpdateProfile(); }}>
               <div className="form-group">
-                <label>Username</label>
+                <label>Full Name</label>
                 <input
                   type="text"
-                  value={editFormData.username || ''}
-                  onChange={(e) => setEditFormData({...editFormData, username: e.target.value})}
+                  value={editFormData.full_name || ''}
+                  onChange={(e) => setEditFormData({...editFormData, full_name: e.target.value})}
                   className="form-input"
                 />
               </div>
@@ -316,7 +308,7 @@ const UserManagement: React.FC = () => {
         <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Reset Password - {selectedUser.full_name}</h2>
+              <h2>Reset Password - {selectedUser.username}</h2>
               <button className="modal-close" onClick={() => setShowPasswordModal(false)}>
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -351,39 +343,6 @@ const UserManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Delete User Modal */}
-      {showBanModal && selectedUser && (
-        <div className="modal-overlay" onClick={() => setShowBanModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Delete User - {selectedUser.full_name || selectedUser.username}</h2>
-              <button className="modal-close" onClick={() => setShowBanModal(false)}>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                </svg>
-              </button>
-            </div>
-
-            <div className="delete-confirmation">
-              <p>Are you sure you want to delete this user? This action cannot be undone.</p>
-              <div className="user-info">
-                <p><strong>Username:</strong> {selectedUser.username}</p>
-                <p><strong>Email:</strong> {selectedUser.email}</p>
-                <p><strong>Role:</strong> {selectedUser.role}</p>
-              </div>
-            </div>
-
-            <div className="modal-actions">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowBanModal(false)}>
-                Cancel
-              </button>
-              <button onClick={handleDeleteUser} className="btn btn-danger">
-                Delete User
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
