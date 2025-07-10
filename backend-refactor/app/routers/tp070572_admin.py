@@ -10,10 +10,7 @@ from uuid import uuid4
 
 import bcrypt
 from boto3.dynamodb.conditions import Attr
-from fastapi import APIRouter, HTTPException, Query, Path, Body, Depends, Request
-from sqlalchemy.orm import Session
-
-from app.database import get_db, AdminLog, SystemMetrics
+from fastapi import APIRouter, HTTPException, Query, Path, Body, Depends
 from app.db import notifications_table, contacts_table, users_table, requests_table, posts_table
 from app.models.schemas import (
     FloodNotificationCreate,
@@ -48,49 +45,11 @@ def verify_admin(admin_key: str = Query(...)):
     
     return session['admin_id']
 
-def log_admin_action(
-    db: Session,
-    admin_id: str,
-    action: str,
-    resource_type: str,
-    resource_id: str = None,
-    details: dict = None,
-    request: Request = None
-):
-    try:
-        log_entry = AdminLog(
-            admin_id=admin_id,
-            action=action,
-            resource_type=resource_type,
-            resource_id=resource_id,
-            details=details,
-            ip_address=request.client.host if request else None,
-            user_agent=request.headers.get("user-agent") if request else None
-        )
-        db.add(log_entry)
-        db.commit()
-    except Exception as e:
-        print(f"Failed to log admin action: {str(e)}")
-
-def record_metric(db: Session, metric_name: str, metric_value: str, metric_type: str = "counter", tags: dict = None):
-    try:
-        metric = SystemMetrics(
-            metric_name=metric_name,
-            metric_value=metric_value,
-            metric_type=metric_type,
-            tags=tags
-        )
-        db.add(metric)
-        db.commit()
-    except Exception as e:
-        print(f"Failed to record metric: {str(e)}")
 
 
 @router.post("/notifications")
 async def create_flood_notification(
     notification: FloodNotificationCreate,
-    request: Request,
-    db: Session = Depends(get_db),
     admin_verified: bool = Depends(verify_admin)
 ):
     try:
@@ -111,25 +70,6 @@ async def create_flood_notification(
         
         notifications_table.put_item(Item=item)
         
-        # Log action to database
-        log_admin_action(
-            db=db,
-            admin_id="admin",
-            action="CREATE",
-            resource_type="notification",
-            resource_id=notification_id,
-            details={"title": notification.title, "severity": notification.severity},
-            request=request
-        )
-        
-        # Record metrics to database
-        record_metric(
-            db=db,
-            metric_name="notifications_created",
-            metric_value="1",
-            metric_type="counter",
-            tags={"severity": notification.severity, "regions": len(notification.affected_regions)}
-        )
         
         return {
             "message": "Flood notification created successfully",
