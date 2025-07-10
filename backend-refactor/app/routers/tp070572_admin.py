@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from uuid import uuid4
 
-import bcrypt
+from werkzeug.security import generate_password_hash, check_password_hash
 from boto3.dynamodb.conditions import Attr
 from fastapi import APIRouter, HTTPException, Query, Path, Body, Depends
 from app.db import notifications_table, users_table, requests_table, posts_table, dynamodb
@@ -20,12 +20,10 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 admin_sessions = {}
 
 def hash_password(password: str) -> str:
-    salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed.decode('utf-8')
+    return generate_password_hash(password)
 
 def verify_password(password: str, hashed: str) -> bool:
-    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+    return check_password_hash(hashed, password)
 
 def generate_secure_key() -> str:
     return secrets.token_urlsafe(32)
@@ -260,7 +258,7 @@ async def get_public_notifications(
 @router.post("/create-admin-user")
 async def create_admin_user(admin_data: dict = Body(...)):
     try:
-        required_fields = ["username", "email", "full_name", "password"]
+        required_fields = ["username", "email", "password"]
         for field in required_fields:
             if field not in admin_data:
                 raise HTTPException(status_code=400, detail=f"Missing required field: {field}")
@@ -278,13 +276,10 @@ async def create_admin_user(admin_data: dict = Body(...)):
             "user_id": admin_id,
             "username": admin_data["username"],
             "email": admin_data["email"],
-            "full_name": admin_data["full_name"],
-            "password_hash": hashed_password,
+            "password": hashed_password,
             "role": "admin",
-            "is_active": True,
-            "created_at": timestamp,
-            "updated_at": timestamp,
-            "permissions": ["notifications", "users", "dashboard"]
+            "S3_URL": None,
+            "S3_Key": None
         }
         
         existing_check = users_table.scan(
@@ -298,7 +293,7 @@ async def create_admin_user(admin_data: dict = Body(...)):
         users_table.put_item(Item=admin_item)
         
         response_data = admin_item.copy()
-        del response_data["password_hash"]
+        del response_data["password"]
         
         return {
             "message": "Admin user created successfully",
@@ -324,18 +319,24 @@ async def admin_login(
         
         response = users_table.scan(
             FilterExpression=Attr('username').eq(username) & 
-                           Attr('role').eq('admin') &
-                           Attr('is_active').eq(True)
+                           Attr('role').eq('admin')
         )
         
         admin_users = response.get("Items", [])
         
         if not admin_users:
+            # Debug: Print what we're looking for
+            print(f"No admin found with username: {username}")
+            # Let's also check what admins exist
+            all_admins = users_table.scan(FilterExpression=Attr('role').eq('admin'))
+            print(f"All admins: {[admin.get('username') for admin in all_admins.get('Items', [])]}")
             raise HTTPException(status_code=401, detail="Invalid admin credentials")
         
         admin_user = admin_users[0]
         
-        if not verify_password(password, admin_user.get("password_hash", "")):
+        if not verify_password(password, admin_user.get("password", "")):
+            print(f"Password verification failed for user: {username}")
+            print(f"Stored password exists: {bool(admin_user.get('password'))}")
             raise HTTPException(status_code=401, detail="Invalid admin credentials")
         
         session_key = generate_secure_key()
@@ -343,8 +344,7 @@ async def admin_login(
         admin_sessions[session_key] = {
             "admin_id": admin_user["user_id"],
             "username": admin_user["username"],
-            "full_name": admin_user["full_name"],
-            "permissions": admin_user.get("permissions", []),
+            "full_name": admin_user["username"],
             "created": datetime.utcnow(),
             "expires": datetime.utcnow() + timedelta(hours=24)
         }
@@ -353,8 +353,7 @@ async def admin_login(
             "message": "Admin login successful",
             "admin_id": admin_user["user_id"],
             "admin_key": session_key,
-            "permissions": admin_user.get("permissions", []),
-            "full_name": admin_user.get("full_name"),
+            "full_name": admin_user.get("username"),
             "session_expires": (datetime.utcnow() + timedelta(hours=24)).isoformat()
         }
     except HTTPException:
@@ -372,8 +371,8 @@ async def list_admin_users(admin_verified: bool = Depends(verify_admin)):
         admin_users = response.get("Items", [])
         
         for user in admin_users:
-            if "password_hash" in user:
-                del user["password_hash"]
+            if "password" in user:
+                del user["password"]
         
         return {
             "count": len(admin_users),
@@ -453,10 +452,9 @@ async def reset_user_password(
         # Update password
         users_table.update_item(
             Key={"user_id": user_id},
-            UpdateExpression="SET password_hash = :password, updated_at = :timestamp",
+            UpdateExpression="SET password = :password",
             ExpressionAttributeValues={
-                ":password": hashed_password,
-                ":timestamp": datetime.utcnow().isoformat()
+                ":password": hashed_password
             }
         )
         
@@ -479,15 +477,22 @@ async def update_user_profile(
         if "Item" not in response:
             raise HTTPException(status_code=404, detail="User not found")
         
-        # Build update expression
-        update_expression = "SET updated_at = :timestamp"
-        expression_values = {":timestamp": datetime.utcnow().isoformat()}
+        # Build update expression  
+        update_expression = "SET "
+        expression_values = {}
+        first_field = True
         
-        allowed_fields = ["full_name", "email", "phone", "address", "location"]
+        allowed_fields = ["username", "email"]
         for field in allowed_fields:
             if field in profile_data:
-                update_expression += f", {field} = :{field}"
+                if not first_field:
+                    update_expression += ", "
+                update_expression += f"{field} = :{field}"
                 expression_values[f":{field}"] = profile_data[field]
+                first_field = False
+        
+        if first_field:  # No fields to update
+            return {"message": "No fields to update", "user_id": user_id}
         
         users_table.update_item(
             Key={"user_id": user_id},
