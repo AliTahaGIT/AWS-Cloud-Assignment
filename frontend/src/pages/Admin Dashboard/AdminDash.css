@@ -1,7 +1,4 @@
-/*
- * Admin Dashboard Styles
- * Author: Amir (TP070572)
- */
+/* TP070572 */
 .admin-dashboard {
   display: flex;
   min-height: 100vh;
@@ -25,7 +22,6 @@
   z-index: -1;
 }
 
-/* Sidebar Styles */
 .admin-sidebar {
   width: 280px;
   background: var(--gradient-hero);
@@ -175,7 +171,6 @@
   height: 18px;
 }
 
-/* Main Content Styles */
 .admin-main {
   flex: 1;
   margin-left: 280px;
@@ -235,7 +230,6 @@
   z-index: 1;
 }
 
-/* Loading Styles */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -264,7 +258,6 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -362,7 +355,6 @@
   text-align: left;
 }
 
-/* Recent Activity */
 .recent-activity {
   background: var(--gradient-surface);
   border-radius: var(--radius-2xl);
@@ -512,7 +504,6 @@
   border: 1px solid var(--neutral-200);
 }
 
-/* Tab Content */
 .tab-content {
   background: var(--gradient-surface);
   border-radius: var(--radius-2xl);
@@ -535,7 +526,6 @@
   color: var(--neutral-600);
 }
 
-/* Mobile Navigation Toggle */
 .mobile-nav-toggle {
   display: none;
   position: fixed;
@@ -562,7 +552,6 @@
   height: 24px;
 }
 
-/* Mobile Overlay */
 .mobile-nav-overlay {
   display: none;
   position: fixed;
@@ -575,7 +564,6 @@
   backdrop-filter: blur(4px);
 }
 
-/* Responsive Design */
 @media (max-width: 1024px) {
   .admin-sidebar {
     width: 260px;

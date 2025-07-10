@@ -1,7 +1,4 @@
-/*
- * Admin Login Component
- * Author: Amir (TP070572)
- */
+// TP070572
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminLogin.css';
@@ -31,11 +28,8 @@ const AdminLogin: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        // Store admin key in localStorage for the session
         localStorage.setItem('admin_key', data.admin_key);
-        localStorage.setItem('admin_name', data.full_name);
-        
-        // Redirect to admin dashboard
+        localStorage.setItem('admin_name', data.username);
         navigate('/admin-dashboard');
       } else {
         const errorData = await response.json();
@@ -57,8 +51,8 @@ const AdminLogin: React.FC = () => {
               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
             </svg>
           </div>
-          <h1>Cloud60 Admin</h1>
-          <p>Flood Management System</p>
+          <h1>Admin Login</h1>
+          <p>Management System</p>
         </div>
 
         <form className="admin-login-form" onSubmit={handleSubmit}>
@@ -72,14 +66,14 @@ const AdminLogin: React.FC = () => {
           )}
 
           <div className="form-group">
-            <label className="form-label">Admin Username</label>
+            <label className="form-label">Username</label>
             <input
               type="text"
               value={credentials.username}
               onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
               className="form-input"
               required
-              placeholder="Enter admin username"
+              placeholder="Enter username"
               disabled={loading}
             />
           </div>
@@ -105,14 +99,14 @@ const AdminLogin: React.FC = () => {
             {loading ? (
               <>
                 <div className="login-spinner"></div>
-                Signing In...
+                Loading...
               </>
             ) : (
               <>
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M10,17V14H3V10H10V7L15,12L10,17M10,2H19A2,2 0 0,1 21,4V20A2,2 0 0,1 19,22H10A2,2 0 0,1 8,20V18H10V20H19V4H10V6H8V4A2,2 0 0,1 10,2Z" />
                 </svg>
-                Sign In to Admin Panel
+                Sign In
               </>
             )}
           </button>

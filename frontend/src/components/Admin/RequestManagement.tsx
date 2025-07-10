@@ -1,5 +1,4 @@
-// Request Management Component
-// Author: TP070572
+// TP070572
 import React, { useState, useEffect } from 'react';
 import './RequestManagement.css';
 import useToast from '../../hooks/useToast';
@@ -198,7 +197,7 @@ const RequestManagement: React.FC = () => {
     <div className="request-management">
       <div className="management-header">
         <h1>Requests</h1>
-        <p>Track assistance requests</p>
+        <p>Track requests</p>
       </div>
 
       <div className="management-controls">
@@ -242,7 +241,7 @@ const RequestManagement: React.FC = () => {
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading requests...</p>
+          <p>Loading...</p>
         </div>
       ) : (
         <div className="requests-grid">
@@ -300,8 +299,8 @@ const RequestManagement: React.FC = () => {
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20 6h-2.18c.11-.31.18-.65.18-1a2.996 2.996 0 00-5.5-1.65l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
               </svg>
-              <h3>No requests found</h3>
-              <p>Try different filters</p>
+              <h3>No requests</h3>
+              <p>Try filters</p>
             </div>
           )}
         </div>

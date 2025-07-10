@@ -1,5 +1,4 @@
-// Flood Notifications Manager Component
-// Author: TP070572
+// TP070572
 import React, { useState, useEffect } from 'react';
 import './NotificationsManager.css';
 import useToast from '../../hooks/useToast';
@@ -48,114 +47,75 @@ const NotificationsManager: React.FC = () => {
   const severityLevels = ['low', 'medium', 'high', 'critical'];
 
   const fetchNotifications = async () => {
-    if (!adminKey) {
-      console.error('No admin key found');
-      return;
-    }
-
+    if (!adminKey) return;
+    setLoading(true);
     try {
-      setLoading(true);
       let url = `http://localhost:8000/admin/notifications?admin_key=${adminKey}`;
+      if (filterSeverity) url += `&severity=${filterSeverity}`;
+      if (filterRegion) url += `&region=${filterRegion}`;
       
-      if (filterSeverity) {
-        url += `&severity=${filterSeverity}`;
-      }
-      if (filterRegion) {
-        url += `&region=${filterRegion}`;
-      }
-
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setNotifications(data.notifications);
       } else if (response.status === 403) {
-        console.error('Admin session expired or invalid');
-        // Redirect to login page
         window.location.href = '/admin-login';
-      } else {
-        console.error('Error fetching notifications:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
-    } finally {
-      setLoading(false);
+      console.error('Fetch failed:', error);
     }
+    setLoading(false);
   };
 
   const createNotification = async () => {
-    if (!adminKey) {
-      console.error('No admin key found');
-      return;
-    }
-
+    if (!adminKey) return;
     try {
-      console.log('Creating notification with data:', formData);
       const response = await fetch(`http://localhost:8000/admin/notifications?admin_key=${adminKey}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
-
       if (response.ok) {
-        console.log('Notification created successfully');
-        showSuccess('Notification Created', 'Flood notification has been created and published successfully.');
+        showSuccess('Created', 'Notification created successfully.');
         await fetchNotifications();
         setShowCreateModal(false);
         resetForm();
       } else {
         const errorData = await response.json();
-        console.error('Error creating notification:', response.status, errorData);
-        showError('Creation Failed', errorData.detail || 'Unable to create notification. Please try again.');
+        showError('Failed', errorData.detail || 'Creation failed.');
       }
     } catch (error) {
-      console.error('Error creating notification:', error);
-      showError('Network Error', 'Unable to connect to the server. Please check your connection and try again.');
+      showError('Error', 'Unable to connect.');
     }
   };
 
   const updateNotification = async () => {
     if (!editingNotification) return;
-
     try {
       const response = await fetch(
         `http://localhost:8000/admin/notifications/${editingNotification.notification_id}?admin_key=${adminKey}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        }
+        { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }
       );
-
       if (response.ok) {
         await fetchNotifications();
         setEditingNotification(null);
         resetForm();
       }
     } catch (error) {
-      console.error('Error updating notification:', error);
+      console.error('Update failed:', error);
     }
   };
 
   const deleteNotification = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this notification?')) return;
-
+    if (!confirm('Delete this notification?')) return;
     try {
       const response = await fetch(
         `http://localhost:8000/admin/notifications/${id}?admin_key=${adminKey}`,
-        {
-          method: 'DELETE',
-        }
+        { method: 'DELETE' }
       );
-
-      if (response.ok) {
-        await fetchNotifications();
-      }
+      if (response.ok) await fetchNotifications();
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      console.error('Delete failed:', error);
     }
   };
 
@@ -196,8 +156,8 @@ const NotificationsManager: React.FC = () => {
   return (
     <div className="notifications-manager">
       <div className="manager-header">
-        <h1>Flood Alerts</h1>
-        <p>Manage flood notifications</p>
+        <h1>Notifications</h1>
+        <p>Manage alerts</p>
       </div>
 
       <div className="manager-actions">
@@ -208,7 +168,7 @@ const NotificationsManager: React.FC = () => {
           <svg viewBox="0 0 24 24" fill="currentColor">
             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
           </svg>
-          Create New Notification
+          Create Notification
         </button>
 
         <div className="filters">
@@ -253,7 +213,7 @@ const NotificationsManager: React.FC = () => {
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading notifications...</p>
+          <p>Loading...</p>
         </div>
       ) : (
         <div className="notifications-grid">
@@ -324,8 +284,8 @@ const NotificationsManager: React.FC = () => {
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z" />
               </svg>
-              <h3>No notifications found</h3>
-              <p>Create your first flood notification to get started</p>
+              <h3>No notifications</h3>
+              <p>Create your first notification</p>
             </div>
           )}
         </div>

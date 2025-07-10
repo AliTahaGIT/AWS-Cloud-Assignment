@@ -40,23 +40,21 @@ const AdminDash: React.FC = () => {
   }, [navigate]);
 
   const fetchDashboardStats = async (key: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
       const response = await fetch(`http://localhost:8000/admin/dashboard/stats?admin_key=${key}`);
       if (response.ok) {
         const data = await response.json();
         setStats(data.dashboard_stats);
       } else if (response.status === 403) {
-        // Session expired, redirect to login
         localStorage.removeItem('admin_key');
         localStorage.removeItem('admin_name');
         navigate('/admin-login');
       }
     } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-    } finally {
-      setLoading(false);
+      console.error('Stats fetch failed:', error);
     }
+    setLoading(false);
   };
 
   const handleLogout = () => {
@@ -88,7 +86,7 @@ const AdminDash: React.FC = () => {
       {loading ? (
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading dashboard data...</p>
+          <p>Loading...</p>
         </div>
       ) : (
         <>
@@ -163,7 +161,7 @@ const AdminDash: React.FC = () => {
 
       <nav className={`admin-sidebar ${isMobileNavOpen ? 'mobile-open' : ''}`}>
         <div className="admin-brand">
-          <h2>Cloud60 Admin</h2>
+          <h2>Admin</h2>
           <p>Welcome, {adminName}</p>
         </div>
         
