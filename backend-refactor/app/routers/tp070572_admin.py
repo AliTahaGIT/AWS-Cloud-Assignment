@@ -9,7 +9,7 @@ from uuid import uuid4
 from werkzeug.security import generate_password_hash, check_password_hash
 from boto3.dynamodb.conditions import Attr
 from fastapi import APIRouter, HTTPException, Query, Path, Body, Depends
-from app.db import notifications_table, users_table, requests_table, posts_table, dynamodb
+from app.db import notifications_table, users_table, requests_table, posts_table, announcements_table, dynamodb
 from app.models.schemas import (
     FloodNotificationCreate,
     FloodNotificationUpdate
@@ -39,12 +39,10 @@ def verify_admin(admin_key: str = Query(...)):
     
     return session['admin_id']
 
-
-
 @router.post("/notifications")
 async def create_flood_notification(
     notification: FloodNotificationCreate,
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     try:
         notification_id = str(uuid4())
@@ -58,12 +56,10 @@ async def create_flood_notification(
             "affected_regions": notification.affected_regions,
             "is_active": notification.is_active,
             "created_at": timestamp,
-            "updated_at": timestamp,
-            "created_by": "admin"
+            "updated_at": timestamp
         }
         
         notifications_table.put_item(Item=item)
-        
         
         return {
             "message": "Notification created",
@@ -76,7 +72,7 @@ async def create_flood_notification(
 @router.get("/notifications")
 async def get_flood_notifications(
     active_only: bool = Query(False),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     try:
         if active_only:
@@ -103,7 +99,7 @@ async def get_flood_notifications(
 async def update_flood_notification(
     notification_id: str = Path(...),
     notification_update: FloodNotificationUpdate = Body(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Update a flood notification"""
     try:
@@ -163,7 +159,7 @@ async def update_flood_notification(
 @router.delete("/notifications/{notification_id}")
 async def delete_flood_notification(
     notification_id: str = Path(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Delete a flood notification"""
     try:
@@ -188,7 +184,7 @@ async def delete_flood_notification(
 
 
 @router.get("/dashboard/stats")
-async def get_dashboard_stats(admin_verified: bool = Depends(verify_admin)):
+async def get_dashboard_stats(_: str = Depends(verify_admin)):
     try:
         stats = {}
         
@@ -268,8 +264,6 @@ async def create_admin_user(admin_data: dict = Body(...)):
             raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
         
         admin_id = str(uuid4())
-        timestamp = datetime.utcnow().isoformat()
-        
         hashed_password = hash_password(password)
         
         admin_item = {
@@ -325,18 +319,11 @@ async def admin_login(
         admin_users = response.get("Items", [])
         
         if not admin_users:
-            # Debug: Print what we're looking for
-            print(f"No admin found with username: {username}")
-            # Let's also check what admins exist
-            all_admins = users_table.scan(FilterExpression=Attr('role').eq('admin'))
-            print(f"All admins: {[admin.get('username') for admin in all_admins.get('Items', [])]}")
             raise HTTPException(status_code=401, detail="Invalid admin credentials")
         
         admin_user = admin_users[0]
         
         if not verify_password(password, admin_user.get("password", "")):
-            print(f"Password verification failed for user: {username}")
-            print(f"Stored password exists: {bool(admin_user.get('password'))}")
             raise HTTPException(status_code=401, detail="Invalid admin credentials")
         
         session_key = generate_secure_key()
@@ -362,7 +349,7 @@ async def admin_login(
         raise HTTPException(status_code=500, detail=f"Error during admin login: {str(e)}")
 
 @router.get("/admin-users")
-async def list_admin_users(admin_verified: bool = Depends(verify_admin)):
+async def list_admin_users(_: str = Depends(verify_admin)):
     try:
         response = users_table.scan(
             FilterExpression=Attr('role').eq('admin')
@@ -388,7 +375,7 @@ async def get_all_users(
     search: Optional[str] = Query(None),
     role: Optional[str] = Query(None),
     limit: int = Query(100),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Get all users with search and filter options"""
     try:
@@ -433,7 +420,7 @@ async def get_all_users(
 async def reset_user_password(
     user_id: str = Path(...),
     password_data: dict = Body(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Reset a user's password"""
     try:
@@ -468,7 +455,7 @@ async def reset_user_password(
 async def update_user_profile(
     user_id: str = Path(...),
     profile_data: dict = Body(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Update a user's profile information"""
     try:
@@ -510,7 +497,7 @@ async def update_user_profile(
 @router.delete("/users/{user_id}")
 async def delete_user(
     user_id: str = Path(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Delete a user account"""
     try:
@@ -540,7 +527,7 @@ async def get_all_requests(
     region: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     limit: int = Query(100),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Get all assistance requests with filters"""
     try:
@@ -576,7 +563,7 @@ async def get_all_requests(
 async def update_request_status(
     request_id: str = Path(...),
     status_data: dict = Body(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Update request status"""
     try:
@@ -625,7 +612,7 @@ async def update_request_status(
 async def assign_request_to_expert(
     request_id: str = Path(...),
     assign_data: dict = Body(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Assign request to an expert"""
     try:
@@ -666,7 +653,7 @@ async def assign_request_to_expert(
 async def add_admin_note_to_request(
     request_id: str = Path(...),
     note_data: dict = Body(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Add admin note to request"""
     try:
@@ -686,8 +673,7 @@ async def add_admin_note_to_request(
         new_note = {
             "note_id": str(uuid4()),
             "note": note,
-            "created_at": datetime.utcnow().isoformat(),
-            "created_by": "admin"
+            "created_at": datetime.utcnow().isoformat()
         }
         admin_notes.append(new_note)
         
@@ -715,27 +701,10 @@ async def add_admin_note_to_request(
 @router.post("/announcements")
 async def create_announcement(
     announcement_data: dict = Body(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Create a global announcement"""
     try:
-        # Create announcements table if not exists
-        try:
-            announcements_table = dynamodb.Table('cloud60-announcements')
-            announcements_table.load()
-        except:
-            announcements_table = dynamodb.create_table(
-                TableName='cloud60-announcements',
-                KeySchema=[
-                    {'AttributeName': 'announcement_id', 'KeyType': 'HASH'}
-                ],
-                AttributeDefinitions=[
-                    {'AttributeName': 'announcement_id', 'AttributeType': 'S'}
-                ],
-                BillingMode='PAY_PER_REQUEST'
-            )
-            announcements_table.wait_until_exists()
-        
         announcement_id = str(uuid4())
         timestamp = datetime.utcnow().isoformat()
         
@@ -745,8 +714,7 @@ async def create_announcement(
             "content": announcement_data.get("content"),
             "is_active": announcement_data.get("is_active", True),
             "created_at": timestamp,
-            "updated_at": timestamp,
-            "created_by": "admin"
+            "updated_at": timestamp
         }
         
         announcements_table.put_item(Item=item)
@@ -762,26 +730,17 @@ async def create_announcement(
 @router.get("/announcements")
 async def get_announcements(
     active_only: bool = Query(True),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Get all announcements"""
     try:
-        announcements_table = dynamodb.Table('cloud60-announcements')
-        
-        if active_only:
-            response = announcements_table.scan(
-                FilterExpression=Attr('is_active').eq(True)
-            )
-        else:
-            response = announcements_table.scan()
+        filter_expr = Attr('is_active').eq(True) if active_only else None
+        response = announcements_table.scan(
+            **({"FilterExpression": filter_expr} if filter_expr else {})
+        )
         
         announcements = response.get("Items", [])
-        
-        # Sort by creation date (newest first)
-        announcements.sort(
-            key=lambda x: x.get('created_at', ''),
-            reverse=True
-        )
+        announcements.sort(key=lambda x: x.get('created_at', ''), reverse=True)
         
         return {
             "count": len(announcements),
@@ -794,11 +753,10 @@ async def get_announcements(
 async def update_announcement(
     announcement_id: str = Path(...),
     update_data: dict = Body(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Update an announcement"""
     try:
-        announcements_table = dynamodb.Table('cloud60-announcements')
         
         # Check if announcement exists
         response = announcements_table.get_item(Key={"announcement_id": announcement_id})
@@ -836,11 +794,10 @@ async def update_announcement(
 @router.delete("/announcements/{announcement_id}")
 async def delete_announcement(
     announcement_id: str = Path(...),
-    admin_verified: bool = Depends(verify_admin)
+    _: str = Depends(verify_admin)
 ):
     """Delete an announcement"""
     try:
-        announcements_table = dynamodb.Table('cloud60-announcements')
         
         announcements_table.delete_item(Key={"announcement_id": announcement_id})
         
@@ -851,29 +808,19 @@ async def delete_announcement(
 @router.get("/public/announcements")
 async def get_public_announcements():
     """Get active announcements for public display"""
-    try:
-        announcements_table = dynamodb.Table('cloud60-announcements')
-        
-        response = announcements_table.scan(
-            FilterExpression=Attr('is_active').eq(True)
-        )
-        
-        announcements = response.get("Items", [])
-        current_time = datetime.utcnow().isoformat()
-        
-        # All active announcements (no expiration check needed)
-        active_announcements = announcements
-        
-        # Sort by creation date (newest first)
-        active_announcements.sort(
-            key=lambda x: x.get('created_at', ''),
-            reverse=True
-        )
-        
-        return {
-            "count": len(active_announcements),
-            "announcements": active_announcements
-        }
-    except Exception as e:
-        # If table doesn't exist, return empty
-        return {"count": 0, "announcements": []}
+    response = announcements_table.scan(
+        FilterExpression=Attr('is_active').eq(True)
+    )
+    
+    announcements = response.get("Items", [])
+    
+    # Sort by creation date (newest first)
+    announcements.sort(
+        key=lambda x: x.get('created_at', ''),
+        reverse=True
+    )
+    
+    return {
+        "count": len(announcements),
+        "announcements": announcements
+    }

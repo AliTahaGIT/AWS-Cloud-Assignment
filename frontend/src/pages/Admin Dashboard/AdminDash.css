@@ -359,6 +359,7 @@
   font-weight: var(--font-weight-extrabold);
   color: var(--neutral-900);
   margin: 0;
+  text-align: left;
 }
 
 /* Recent Activity */

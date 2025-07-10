@@ -245,7 +245,7 @@ const NotificationsManager: React.FC = () => {
               setFilterRegion('');
             }}
           >
-            Clear Filters
+            Clear
           </button>
         </div>
       </div>

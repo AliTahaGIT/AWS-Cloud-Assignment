@@ -37,20 +37,32 @@ def create_table_if_not_exists(table_name, key_schema, attribute_definitions):
             print(f"Error creating table {table_name}: {e}")
             raise
 
-posts_table = dynamodb.Table("Posts") # Table for Blog Posts - Ali
-users_table = dynamodb.Table("Users") # Table for User credentials - Ahmed
-requests_table = dynamodb.Table("Requests") # Table for User Requests - Abduzafar & Ali
+posts_table = create_table_if_not_exists(
+    "Posts", # Table for Blog Posts - Ali
+    [{'AttributeName': 'post_id', 'KeyType': 'HASH'}],
+    [{'AttributeName': 'post_id', 'AttributeType': 'S'}]
+)
 
-# Admin Tables - TP070572
+users_table = create_table_if_not_exists(
+    "Users", # Table for User credentials - Ahmed
+    [{'AttributeName': 'user_id', 'KeyType': 'HASH'}],
+    [{'AttributeName': 'user_id', 'AttributeType': 'S'}]
+)
+
+requests_table = create_table_if_not_exists(
+    "Requests", # Table for User Requests - Abduzafar & Ali
+    [{'AttributeName': 'request_id', 'KeyType': 'HASH'}],
+    [{'AttributeName': 'request_id', 'AttributeType': 'S'}]
+)
+
 notifications_table = create_table_if_not_exists(
-    "FloodNotifications",
+    "FloodNotifications", # Table for Flood Notifications - Amir
     [{'AttributeName': 'notification_id', 'KeyType': 'HASH'}],
     [{'AttributeName': 'notification_id', 'AttributeType': 'S'}]
 )
 
-# Create EmergencyContacts table if it doesn't exist
-contacts_table = create_table_if_not_exists(
-    "EmergencyContacts",
-    [{'AttributeName': 'contact_id', 'KeyType': 'HASH'}],
-    [{'AttributeName': 'contact_id', 'AttributeType': 'S'}]
+announcements_table = create_table_if_not_exists(
+    "GlobalAnnouncements", # Table for Global Announcements - Amir
+    [{'AttributeName': 'announcement_id', 'KeyType': 'HASH'}],
+    [{'AttributeName': 'announcement_id', 'AttributeType': 'S'}]
 )

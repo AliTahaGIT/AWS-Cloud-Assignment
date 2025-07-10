@@ -26,7 +26,6 @@ interface AdminNote {
   note_id: string;
   note: string;
   created_at: string;
-  created_by: string;
 }
 
 interface Expert {
@@ -376,7 +375,7 @@ const RequestManagement: React.FC = () => {
                       <div key={note.note_id} className="note-item">
                         <p>{note.note}</p>
                         <span className="note-meta">
-                          {new Date(note.created_at).toLocaleString()} by {note.created_by}
+                          {new Date(note.created_at).toLocaleString()}
                         </span>
                       </div>
                     ))}
