@@ -10,7 +10,7 @@ from uuid import uuid4
 
 router = APIRouter()
 
-@app.post("/register")
+@router.post("/register")
 def register_user(
     username: str = Form(...),
     password: str = Form(...),
