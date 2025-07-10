@@ -1,4 +1,3 @@
-/* Modern User Settings Styles */
 .settings-container {
   min-height: 100vh;
   background: linear-gradient(135deg, var(--neutral-50) 0%, var(--primary-50) 30%, var(--accent-50) 70%, var(--neutral-50) 100%);

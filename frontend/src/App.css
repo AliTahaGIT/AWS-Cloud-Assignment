@@ -1,4 +1,3 @@
-/* Cloud60 Modern Design System */
 :root {
   /* Brand Colors */
   --primary-50: #eff6ff;
@@ -84,13 +83,11 @@
   --neutral-800: #1e293b;
   --neutral-900: #0f172a;
 
-  /* Surface Colors */
   --surface-primary: #ffffff;
   --surface-secondary: var(--neutral-50);
   --surface-tertiary: var(--neutral-100);
   --surface-overlay: rgba(0, 0, 0, 0.5);
 
-  /* Typography */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-weight-normal: 400;
   --font-weight-medium: 500;
@@ -173,7 +170,6 @@
   --z-toast: 9999;
 }
 
-/* Modern CSS Reset */
 *,
 *::before,
 *::after {
@@ -334,7 +330,6 @@ a:hover {
   color: var(--neutral-700);
 }
 
-/* COMPLETELY REMOVE ALL WEIRD LINES FROM HEADINGS AND HEADERS */
 .manager-header::before,
 .form-header::before,
 .settings-header::before,
@@ -362,13 +357,11 @@ h6::before,
   display: none !important;
 }
 
-/* Global fix for form label decoration lines */
 .form-label::before {
   flex-shrink: 0;
-  display: none !important; /* Remove these lines too */
+  display: none !important;
 }
 
-/* Option to disable form label lines */
 .form-label.no-decoration::before {
   display: none;
 }
