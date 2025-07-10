@@ -8,10 +8,8 @@ import ToastContainer from '../Toast/ToastContainer';
 interface Request {
   request_id: string;
   user_id?: string;
-  user_email?: string;
   user_name: string;
   phone_number?: string;
-  req_type?: string;
   req_details?: string;
   req_region?: string;
   location?: string;
@@ -49,7 +47,7 @@ const RequestManagement: React.FC = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
-  const [newStatus, setNewStatus] = useState<string>('');
+  const [newStatus, setNewStatus] = useState('');
   const [adminNote, setAdminNote] = useState('');
   const [newNote, setNewNote] = useState('');
   const [experts, setExperts] = useState<Expert[]>([]);

@@ -12,7 +12,6 @@ interface User {
   full_name?: string;
   role: string;
   is_banned?: boolean;
-  ban_reason?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -25,7 +24,6 @@ const UserManagement: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showBanModal, setShowBanModal] = useState(false);
-  const [banReason, setBanReason] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
   const [adminKey] = useState(localStorage.getItem('admin_key') || '');

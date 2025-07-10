@@ -78,8 +78,6 @@ async def create_flood_notification(
 @router.get("/notifications")
 async def get_flood_notifications(
     active_only: bool = Query(False),
-    severity: Optional[str] = Query(None),
-    region: Optional[str] = Query(None),
     admin_verified: bool = Depends(verify_admin)
 ):
     try:
@@ -92,13 +90,6 @@ async def get_flood_notifications(
         
         notifications = response.get("Items", [])
         
-        # Apply additional filters
-        if severity:
-            notifications = [n for n in notifications if n.get('severity') == severity]
-        
-        if region:
-            notifications = [n for n in notifications if region in n.get('affected_regions', [])]
-        
         # Sort by creation date (newest first)
         notifications.sort(key=lambda x: x.get('created_at', ''), reverse=True)
         
@@ -109,25 +100,6 @@ async def get_flood_notifications(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching notifications: {str(e)}")
 
-@router.get("/notifications/{notification_id}")
-async def get_flood_notification(
-    notification_id: str = Path(...),
-    admin_verified: bool = Depends(verify_admin)
-):
-    """Get a specific flood notification by ID"""
-    try:
-        response = notifications_table.get_item(
-            Key={"notification_id": notification_id}
-        )
-        
-        if "Item" not in response:
-            raise HTTPException(status_code=404, detail="Notification not found")
-        
-        return response["Item"]
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching notification: {str(e)}")
 
 @router.put("/notifications/{notification_id}")
 async def update_flood_notification(
@@ -248,56 +220,7 @@ async def get_dashboard_stats(admin_verified: bool = Depends(verify_admin)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching stats: {str(e)}")
 
-@router.get("/users")
-async def get_users_overview(
-    limit: int = Query(50),
-    admin_verified: bool = Depends(verify_admin)
-):
-    try:
-        response = users_table.scan(Limit=limit)
-        users = response.get("Items", [])
-        
-        safe_users = []
-        for user in users:
-            safe_user = {
-                "user_id": user.get("user_id", ""),
-                "full_name": user.get("full_name", ""),
-                "email": user.get("email", ""),
-                "role": user.get("role", ""),
-                "created_at": user.get("created_at", "")
-            }
-            safe_users.append(safe_user)
-        
-        return {
-            "count": len(safe_users),
-            "users": safe_users
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching users: {str(e)}")
 
-@router.get("/requests/overview")
-async def get_requests_overview(
-    status: Optional[str] = Query(None),
-    region: Optional[str] = Query(None),
-    limit: int = Query(50),
-    admin_verified: bool = Depends(verify_admin)
-):
-    try:
-        response = requests_table.scan(Limit=limit)
-        requests = response.get("Items", [])
-        
-        if status:
-            requests = [r for r in requests if r.get('status') == status]
-        
-        if region:
-            requests = [r for r in requests if r.get('region') == region]
-        
-        return {
-            "count": len(requests),
-            "requests": requests
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching requests: {str(e)}")
 
 
 @router.get("/public/notifications")
@@ -465,7 +388,6 @@ async def list_admin_users(admin_verified: bool = Depends(verify_admin)):
 async def get_all_users(
     search: Optional[str] = Query(None),
     role: Optional[str] = Query(None),
-    is_banned: Optional[bool] = Query(None),
     limit: int = Query(100),
     admin_verified: bool = Depends(verify_admin)
 ):
@@ -475,10 +397,6 @@ async def get_all_users(
         
         if role:
             filter_expression = Attr('role').eq(role)
-        
-        if is_banned is not None:
-            banned_filter = Attr('is_banned').eq(is_banned)
-            filter_expression = banned_filter if filter_expression is None else filter_expression & banned_filter
         
         scan_params = {"Limit": limit}
         if filter_expression:
@@ -511,55 +429,6 @@ async def get_all_users(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching users: {str(e)}")
 
-@router.patch("/users/{user_id}/ban")
-async def ban_user(
-    user_id: str = Path(...),
-    ban_data: dict = Body(...),
-    admin_verified: bool = Depends(verify_admin)
-):
-    """Ban or unban a user"""
-    try:
-        is_banned = ban_data.get("is_banned", True)
-        ban_reason = ban_data.get("ban_reason", "")
-        
-        # Check if user exists
-        response = users_table.get_item(Key={"user_id": user_id})
-        if "Item" not in response:
-            raise HTTPException(status_code=404, detail="User not found")
-        
-        user = response["Item"]
-        if user.get("role") == "admin":
-            raise HTTPException(status_code=403, detail="Cannot ban admin users")
-        
-        # Update user ban status
-        update_expression = "SET is_banned = :banned, updated_at = :timestamp"
-        expression_values = {
-            ":banned": is_banned,
-            ":timestamp": datetime.utcnow().isoformat()
-        }
-        
-        if is_banned and ban_reason:
-            update_expression += ", ban_reason = :reason, banned_at = :banned_at"
-            expression_values[":reason"] = ban_reason
-            expression_values[":banned_at"] = datetime.utcnow().isoformat()
-        elif not is_banned:
-            update_expression += " REMOVE ban_reason, banned_at"
-        
-        users_table.update_item(
-            Key={"user_id": user_id},
-            UpdateExpression=update_expression,
-            ExpressionAttributeValues=expression_values
-        )
-        
-        return {
-            "message": f"User {'banned' if is_banned else 'unbanned'} successfully",
-            "user_id": user_id,
-            "is_banned": is_banned
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error updating user ban status: {str(e)}")
 
 @router.patch("/users/{user_id}/reset-password")
 async def reset_user_password(
@@ -632,46 +501,6 @@ async def update_user_profile(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error updating user profile: {str(e)}")
 
-@router.get("/users/{user_id}/activity")
-async def get_user_activity(
-    user_id: str = Path(...),
-    admin_verified: bool = Depends(verify_admin)
-):
-    """Get user activity logs"""
-    try:
-        # Get user info
-        user_response = users_table.get_item(Key={"user_id": user_id})
-        if "Item" not in user_response:
-            raise HTTPException(status_code=404, detail="User not found")
-        
-        user = user_response["Item"]
-        user.pop('password_hash', None)
-        
-        # Get user's posts
-        posts_response = posts_table.scan(
-            FilterExpression=Attr('author_id').eq(user_id)
-        )
-        posts = posts_response.get("Items", [])
-        
-        # Get user's requests
-        requests_response = requests_table.scan(
-            FilterExpression=Attr('user_id').eq(user_id)
-        )
-        user_requests = requests_response.get("Items", [])
-        
-        return {
-            "user": user,
-            "activity": {
-                "posts_count": len(posts),
-                "requests_count": len(user_requests),
-                "recent_posts": sorted(posts, key=lambda x: x.get('created_at', ''), reverse=True)[:5],
-                "recent_requests": sorted(user_requests, key=lambda x: x.get('created_at', ''), reverse=True)[:5]
-            }
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error fetching user activity: {str(e)}")
 
 @router.delete("/users/{user_id}")
 async def delete_user(
