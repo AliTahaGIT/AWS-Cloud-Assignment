@@ -68,7 +68,7 @@ async def create_flood_notification(
         
         
         return {
-            "message": "Flood notification created successfully",
+            "message": "Notification created",
             "notification_id": notification_id,
             "data": item
         }
@@ -154,7 +154,7 @@ async def update_flood_notification(
         )
         
         return {
-            "message": "Notification updated successfully",
+            "message": "Notification updated",
             "data": updated_response["Item"]
         }
     except HTTPException:
@@ -182,7 +182,7 @@ async def delete_flood_notification(
             Key={"notification_id": notification_id}
         )
         
-        return {"message": "Notification deleted successfully"}
+        return {"message": "Notification deleted"}
     except HTTPException:
         raise
     except Exception as e:
@@ -460,7 +460,7 @@ async def reset_user_password(
             }
         )
         
-        return {"message": "Password reset successfully", "user_id": user_id}
+        return {"message": "Password reset", "user_id": user_id}
     except HTTPException:
         raise
     except Exception as e:
@@ -495,7 +495,7 @@ async def update_user_profile(
             ExpressionAttributeValues=expression_values
         )
         
-        return {"message": "User profile updated successfully", "user_id": user_id}
+        return {"message": "Profile updated", "user_id": user_id}
     except HTTPException:
         raise
     except Exception as e:
@@ -521,7 +521,7 @@ async def delete_user(
         # Delete the user
         users_table.delete_item(Key={"user_id": user_id})
         
-        return {"message": "User deleted successfully", "user_id": user_id}
+        return {"message": "User deleted", "user_id": user_id}
     except HTTPException:
         raise
     except Exception as e:
@@ -611,7 +611,7 @@ async def update_request_status(
         )
         
         return {
-            "message": "Request status updated successfully",
+            "message": "Status updated",
             "request_id": request_id,
             "new_status": new_status
         }
@@ -652,7 +652,7 @@ async def assign_request_to_expert(
         )
         
         return {
-            "message": "Request assigned successfully",
+            "message": "Request assigned",
             "request_id": request_id,
             "assigned_to": expert_id
         }
@@ -701,7 +701,7 @@ async def add_admin_note_to_request(
         )
         
         return {
-            "message": "Note added successfully",
+            "message": "Note added",
             "note": new_note
         }
     except HTTPException:
@@ -751,7 +751,7 @@ async def create_announcement(
         announcements_table.put_item(Item=item)
         
         return {
-            "message": "Announcement created successfully",
+            "message": "Announcement created",
             "announcement_id": announcement_id,
             "data": item
         }
@@ -826,7 +826,7 @@ async def update_announcement(
             
         announcements_table.update_item(**update_params)
         
-        return {"message": "Announcement updated successfully"}
+        return {"message": "Announcement updated"}
     except HTTPException:
         raise
     except Exception as e:
@@ -843,7 +843,7 @@ async def delete_announcement(
         
         announcements_table.delete_item(Key={"announcement_id": announcement_id})
         
-        return {"message": "Announcement deleted successfully"}
+        return {"message": "Announcement deleted"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting announcement: {str(e)}")
 

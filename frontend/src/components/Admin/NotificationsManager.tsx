@@ -196,8 +196,8 @@ const NotificationsManager: React.FC = () => {
   return (
     <div className="notifications-manager">
       <div className="manager-header">
-        <h1>Flood Notifications Management</h1>
-        <p>Create and manage flood alerts for affected regions</p>
+        <h1>Flood Alerts</h1>
+        <p>Manage flood notifications</p>
       </div>
 
       <div className="manager-actions">

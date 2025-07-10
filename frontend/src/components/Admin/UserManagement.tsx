@@ -1,5 +1,4 @@
-// User Management Component
-// Author: TP070572
+// TP070572
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
 import useToast from '../../hooks/useToast';
@@ -32,13 +31,13 @@ const UserManagement: React.FC = () => {
   const fetchUsers = async () => {
     if (!adminKey) return;
 
-    try {
-      setLoading(true);
-      let url = `http://localhost:8000/admin/users/all?admin_key=${adminKey}`;
-      
-      if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
-      if (roleFilter) url += `&role=${roleFilter}`;
+    setLoading(true);
+    let url = `http://localhost:8000/admin/users/all?admin_key=${adminKey}`;
+    
+    if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+    if (roleFilter) url += `&role=${roleFilter}`;
 
+    try {
       const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
@@ -50,89 +49,71 @@ const UserManagement: React.FC = () => {
       }
     } catch (error) {
       showError('Network Error', 'Unable to connect to server');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
 
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
 
-    try {
-      const response = await fetch(
-        `http://localhost:8000/admin/users/${selectedUser.user_id}?admin_key=${adminKey}`,
-        {
-          method: 'DELETE'
-        }
-      );
+    const response = await fetch(
+      `http://localhost:8000/admin/users/${selectedUser.user_id}?admin_key=${adminKey}`,
+      { method: 'DELETE' }
+    );
 
-      if (response.ok) {
-        showSuccess('Success', 'User deleted successfully');
-        await fetchUsers();
-        setShowBanModal(false);
-        setSelectedUser(null);
-      } else {
-        const error = await response.json();
-        showError('Error', error.detail || 'Failed to delete user');
-      }
-    } catch (error) {
-      showError('Network Error', 'Unable to delete user');
+    if (response.ok) {
+      showSuccess('Success', 'User deleted');
+      fetchUsers();
+      setShowBanModal(false);
+      setSelectedUser(null);
+    } else {
+      showError('Error', 'Failed to delete user');
     }
   };
 
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword) return;
 
-    try {
-      const response = await fetch(
-        `http://localhost:8000/admin/users/${selectedUser.user_id}/reset-password?admin_key=${adminKey}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ new_password: newPassword })
-        }
-      );
-
-      if (response.ok) {
-        showSuccess('Success', 'Password reset successfully');
-        setShowPasswordModal(false);
-        setNewPassword('');
-        setSelectedUser(null);
-      } else {
-        const error = await response.json();
-        showError('Error', error.detail || 'Failed to reset password');
+    const response = await fetch(
+      `http://localhost:8000/admin/users/${selectedUser.user_id}/reset-password?admin_key=${adminKey}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ new_password: newPassword })
       }
-    } catch (error) {
-      showError('Network Error', 'Unable to reset password');
+    );
+
+    if (response.ok) {
+      showSuccess('Success', 'Password reset');
+      setShowPasswordModal(false);
+      setNewPassword('');
+      setSelectedUser(null);
+    } else {
+      showError('Error', 'Failed to reset password');
     }
   };
 
   const handleUpdateProfile = async () => {
     if (!selectedUser) return;
 
-    try {
-      const response = await fetch(
-        `http://localhost:8000/admin/users/${selectedUser.user_id}/profile?admin_key=${adminKey}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(editFormData)
-        }
-      );
-
-      if (response.ok) {
-        showSuccess('Success', 'User profile updated successfully');
-        await fetchUsers();
-        setShowEditModal(false);
-        setEditFormData({});
-        setSelectedUser(null);
-      } else {
-        const error = await response.json();
-        showError('Error', error.detail || 'Failed to update profile');
+    const response = await fetch(
+      `http://localhost:8000/admin/users/${selectedUser.user_id}/profile?admin_key=${adminKey}`,
+      {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editFormData)
       }
-    } catch (error) {
-      showError('Network Error', 'Unable to update profile');
+    );
+
+    if (response.ok) {
+      showSuccess('Success', 'Profile updated');
+      fetchUsers();
+      setShowEditModal(false);
+      setEditFormData({});
+      setSelectedUser(null);
+    } else {
+      showError('Error', 'Failed to update profile');
     }
   };
 
@@ -152,8 +133,8 @@ const UserManagement: React.FC = () => {
   return (
     <div className="user-management">
       <div className="management-header">
-        <h1>User Management</h1>
-        <p>Manage all registered users and their accounts</p>
+        <h1>Users</h1>
+        <p>Manage user accounts</p>
       </div>
 
       <div className="management-controls">
@@ -277,7 +258,7 @@ const UserManagement: React.FC = () => {
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
               </svg>
               <h3>No users found</h3>
-              <p>Try adjusting your search filters</p>
+              <p>Try different filters</p>
             </div>
           )}
         </div>

@@ -164,8 +164,8 @@ const AnnouncementsManager: React.FC = () => {
   return (
     <div className="announcements-manager">
       <div className="manager-header">
-        <h1>Global Announcements</h1>
-        <p>Create and manage global announcements visible on the main page</p>
+        <h1>Announcements</h1>
+        <p>Manage site announcements</p>
       </div>
 
       <div className="manager-actions">
@@ -252,8 +252,8 @@ const AnnouncementsManager: React.FC = () => {
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M7 18h10v-2H7v2zm0-4h10v-2H7v2zm0-4h10V8H7v2zM4 6v14h16V6H4zm0-2h16c1.1 0 2 .9 2 2v14c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
               </svg>
-              <h3>No announcements found</h3>
-              <p>Create your first global announcement to get started</p>
+              <h3>No announcements</h3>
+              <p>Create an announcement to get started</p>
             </div>
           )}
         </div>
