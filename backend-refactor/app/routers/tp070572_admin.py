@@ -1,5 +1,6 @@
-# Author: TP070572
-
+"""
+Author: AMIR KARIM BHANJI (TP070572)
+"""
 import secrets
 from datetime import datetime, timedelta
 from typing import Optional
