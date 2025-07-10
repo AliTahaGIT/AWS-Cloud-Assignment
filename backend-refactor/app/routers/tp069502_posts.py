@@ -6,7 +6,6 @@ from fastapi import APIRouter, Form, UploadFile, File, HTTPException, Query, Pat
 from app.db import posts_table, requests_table, s3, BUCKET
 from uuid import uuid4
 from datetime import datetime
-from app.models.schemas import UpdatePostModel
 
 router = APIRouter()
 
