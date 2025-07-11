@@ -259,7 +259,7 @@ const AnnouncementsManager: React.FC = () => {
         </div>
       )}
 
-      {/* Create/Edit Modal */}
+      {/* Create/Edit  */}
       {(showCreateModal || editingAnnouncement) && (
         <div className="modal-overlay" onClick={() => {
           setShowCreateModal(false);

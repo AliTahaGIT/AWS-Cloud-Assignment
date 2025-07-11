@@ -88,7 +88,6 @@ const RequestManagement: React.FC = () => {
         setExperts(data.users);
       }
     } catch (error) {
-      // Ignore
     }
   };
 
@@ -307,7 +306,6 @@ const RequestManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Request Details Modal */}
       {showDetailsModal && selectedRequest && (
         <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
           <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
@@ -418,7 +416,6 @@ const RequestManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Update Status Modal */}
       {showStatusModal && selectedRequest && (
         <div className="modal-overlay" onClick={() => setShowStatusModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -472,51 +469,6 @@ const RequestManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Assign Expert Modal */}
-      {showAssignModal && selectedRequest && (
-        <div className="modal-overlay" onClick={() => setShowAssignModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Assign to Expert</h2>
-              <button className="modal-close" onClick={() => setShowAssignModal(false)}>
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                </svg>
-              </button>
-            </div>
-
-            <form className="assign-form" onSubmit={(e) => { e.preventDefault(); assignRequestToExpert(); }}>
-              <div className="form-group">
-                <label>Select Expert</label>
-                <select
-                  value={selectedExpert}
-                  onChange={(e) => setSelectedExpert(e.target.value)}
-                  className="form-select"
-                  required
-                >
-                  <option value="">Choose an expert...</option>
-                  {experts.map(expert => (
-                    <option key={expert.user_id} value={expert.user_id}>
-                      {expert.full_name} - {expert.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="modal-actions">
-                <button type="button" className="btn btn-secondary" onClick={() => setShowAssignModal(false)}>
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary">
-                  Assign Expert
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Note Modal */}
       {showNoteModal && selectedRequest && (
         <div className="modal-overlay" onClick={() => setShowNoteModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

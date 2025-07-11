@@ -88,22 +88,16 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Routes shows Navbar And Other Pages */}
         <Route path="/" element={<Home />} />
         <Route path="/about-us" element={<Aboutus />} />
         <Route path="/RequestForm" element={<ReqForm />} />
         <Route path="/login" element={<LogIN />} />
         <Route path="/UserSettings" element={<Usersettings />} />
         <Route path="/UserDash" element={<Userdash />} />
-
-        {/* Admin routes */}
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
-
-        {/* Expert Dashboard route with name parameter */}
         <Route path="/ExpertDash/:name" element={<ExpertDash />} />
 
-        {/* Catch all other routes and redirect to home */}
         <Route path="*" element={<Home />} />
       </Routes>
     </Router>

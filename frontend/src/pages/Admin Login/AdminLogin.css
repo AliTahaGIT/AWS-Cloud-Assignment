@@ -396,7 +396,6 @@
   height: 16px;
 }
 
-/* Responsive Design */
 @media (max-width: 480px) {
   .admin-login-container {
     padding: var(--space-4);
@@ -439,7 +438,6 @@
   }
 }
 
-/* Animations */
 @keyframes slideInUp {
   from {
     opacity: 0;
@@ -457,7 +455,6 @@
   }
 }
 
-/* Focus styles for accessibility */
 .form-input:focus,
 .admin-login-btn:focus,
 .back-btn:focus {
@@ -465,7 +462,6 @@
   outline-offset: 2px;
 }
 
-/* Enhanced form states */
 .form-group.error .form-input {
   border-color: var(--error-500);
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);

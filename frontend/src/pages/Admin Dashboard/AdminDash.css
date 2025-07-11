@@ -607,7 +607,7 @@
   .admin-main {
     margin-left: 0;
     padding: var(--space-4);
-    padding-top: calc(var(--space-4) + 60px); /* Account for mobile toggle button */
+    padding-top: calc(var(--space-4) + 60px);
   }
 
   .dashboard-content {
@@ -751,7 +751,6 @@
     font-size: var(--text-base);
   }
 
-  /* Mobile sidebar adjustments */
   .admin-sidebar {
     width: 100vw;
     left: -100vw;

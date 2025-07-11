@@ -258,7 +258,7 @@ const UserManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Edit Profile Modal */}
+      {/* Edit Profile  */}
       {showEditModal && selectedUser && (
         <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -305,7 +305,7 @@ const UserManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Password Reset Modal */}
+      {/* Password Reset  */}
       {showPasswordModal && selectedUser && (
         <div className="modal-overlay" onClick={() => setShowPasswordModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
