@@ -3,6 +3,7 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import "./RequestForm.css";
+import API_ENDPOINTS from "../../config/api";
 import useToast from "../../hooks/useToast";
 import ToastContainer from "../../components/Toast/ToastContainer";
 
@@ -90,7 +91,7 @@ function RequestForm() {
       form.append("req_details", formData.details);
       form.append("req_region", formData.region);
 
-      const response = await fetch("http://localhost:8000/submit-request", {
+      const response = await fetch(`${API_ENDPOINTS.SUBMIT_REQUEST}`, {
         method: "POST",
         body: form,
       });

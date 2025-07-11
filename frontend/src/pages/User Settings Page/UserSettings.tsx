@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import "./UserSettings.css"
+import API_ENDPOINTS from "../../config/api"
 import useToast from "../../hooks/useToast"
 import ToastContainer from "../../components/Toast/ToastContainer"
 
@@ -111,7 +112,7 @@ function UserSettings() {
       }
 
       
-      const response = await fetch("http://localhost:8000/update-user-profile", {
+      const response = await fetch(`${API_ENDPOINTS.UPDATE_USER_PROFILE}`, {
         method: "PUT",
         body: formData,
       })

@@ -3,6 +3,7 @@
 import type React from "react";
 import { useState } from "react";
 import "./Login.css";
+import API_ENDPOINTS from "../../config/api";
 import useToast from "../../hooks/useToast";
 import ToastContainer from "../../components/Toast/ToastContainer";
 
@@ -78,7 +79,7 @@ function Login() {
       formData.append("role", loginData.role); 
 
 
-      const response = await fetch("http://localhost:8000/login", {
+      const response = await fetch(API_ENDPOINTS.LOGIN, {
         method: "POST",
         body: formData,
       });
@@ -155,7 +156,7 @@ function Login() {
       formData.append("role", role); 
 
 
-      const response = await fetch("http://localhost:8000/register", {
+      const response = await fetch(API_ENDPOINTS.REGISTER, {
         method: "POST",
         body: formData,
       });

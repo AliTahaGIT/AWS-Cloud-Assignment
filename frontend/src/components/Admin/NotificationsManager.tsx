@@ -1,6 +1,7 @@
 // TP070572
 import React, { useState, useEffect } from 'react';
 import './NotificationsManager.css';
+import API_ENDPOINTS from '../../config/api';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
 
@@ -50,7 +51,7 @@ const NotificationsManager: React.FC = () => {
     if (!adminKey) return;
     setLoading(true);
     try {
-      let url = `http://localhost:8000/admin/notifications?admin_key=${adminKey}`;
+      let url = `${API_ENDPOINTS.ADMIN_NOTIFICATIONS}?admin_key=${adminKey}`;
       if (filterSeverity) url += `&severity=${filterSeverity}`;
       if (filterRegion) url += `&region=${filterRegion}`;
       
@@ -70,7 +71,7 @@ const NotificationsManager: React.FC = () => {
   const createNotification = async () => {
     if (!adminKey) return;
     try {
-      const response = await fetch(`http://localhost:8000/admin/notifications?admin_key=${adminKey}`, {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_NOTIFICATIONS}?admin_key=${adminKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -93,7 +94,7 @@ const NotificationsManager: React.FC = () => {
     if (!editingNotification) return;
     try {
       const response = await fetch(
-        `http://localhost:8000/admin/notifications/${editingNotification.notification_id}?admin_key=${adminKey}`,
+        `${API_ENDPOINTS.ADMIN_NOTIFICATIONS}/${editingNotification.notification_id}?admin_key=${adminKey}`,
         { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }
       );
       if (response.ok) {
@@ -110,7 +111,7 @@ const NotificationsManager: React.FC = () => {
     if (!confirm('Delete this notification?')) return;
     try {
       const response = await fetch(
-        `http://localhost:8000/admin/notifications/${id}?admin_key=${adminKey}`,
+        `${API_ENDPOINTS.ADMIN_NOTIFICATIONS}/${id}?admin_key=${adminKey}`,
         { method: 'DELETE' }
       );
       if (response.ok) await fetchNotifications();

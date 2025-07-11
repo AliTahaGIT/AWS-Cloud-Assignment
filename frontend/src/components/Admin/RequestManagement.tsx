@@ -1,6 +1,7 @@
 // TP070572
 import React, { useState, useEffect } from 'react';
 import './RequestManagement.css';
+import API_ENDPOINTS from '../../config/api';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
 
@@ -58,7 +59,7 @@ const RequestManagement: React.FC = () => {
 
     try {
       setLoading(true);
-      let url = `http://localhost:8000/admin/requests/all?admin_key=${adminKey}`;
+      let url = `${API_ENDPOINTS.ADMIN_REQUESTS}?admin_key=${adminKey}`;
       
       if (statusFilter) url += `&status=${statusFilter}`;
       if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
@@ -81,7 +82,7 @@ const RequestManagement: React.FC = () => {
 
   const fetchExperts = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/admin/users/all?admin_key=${adminKey}&role=expert`);
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_USERS}?admin_key=${adminKey}&role=expert`);
       if (response.ok) {
         const data = await response.json();
         setExperts(data.users);
@@ -95,7 +96,7 @@ const RequestManagement: React.FC = () => {
     if (!selectedRequest || !newStatus) return;
 
     const response = await fetch(
-      `http://localhost:8000/admin/requests/${selectedRequest.request_id}/status?admin_key=${adminKey}`,
+      `${API_ENDPOINTS.BASE_URL}/admin/requests/${selectedRequest.request_id}/status?admin_key=${adminKey}`,
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -120,7 +121,7 @@ const RequestManagement: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/admin/requests/${selectedRequest.request_id}/assign?admin_key=${adminKey}`,
+        `${API_ENDPOINTS.BASE_URL}/admin/requests/${selectedRequest.request_id}/assign?admin_key=${adminKey}`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -148,7 +149,7 @@ const RequestManagement: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/admin/requests/${selectedRequest.request_id}/notes?admin_key=${adminKey}`,
+        `${API_ENDPOINTS.BASE_URL}/admin/requests/${selectedRequest.request_id}/notes?admin_key=${adminKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

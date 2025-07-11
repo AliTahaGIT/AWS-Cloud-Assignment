@@ -6,6 +6,7 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import "./MainPage.css";
+import API_ENDPOINTS from "../../config/api";
 import Post from "../../components/Posts/Post";
 
 interface PostData {
@@ -36,7 +37,7 @@ function MainPage() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/posts`);
+        const response = await fetch(`${API_ENDPOINTS.POSTS}`);
         const data = await response.json();
         setPosts(data);
       } catch (error) {
@@ -48,7 +49,7 @@ function MainPage() {
 
     const fetchAnnouncements = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/public/announcements`);
+        const response = await fetch(`${API_ENDPOINTS.PUBLIC_ANNOUNCEMENTS}`);
         if (response.ok) {
           const data = await response.json();
           setAnnouncements(data.announcements || []);

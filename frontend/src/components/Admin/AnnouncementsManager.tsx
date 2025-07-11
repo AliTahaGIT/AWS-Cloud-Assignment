@@ -2,6 +2,7 @@
 // Author: TP070572
 import React, { useState, useEffect } from 'react';
 import './AnnouncementsManager.css';
+import API_ENDPOINTS from '../../config/api';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
 
@@ -40,7 +41,7 @@ const AnnouncementsManager: React.FC = () => {
 
     try {
       setLoading(true);
-      const url = `http://localhost:8000/admin/announcements?admin_key=${adminKey}&active_only=${activeOnly}`;
+      const url = `${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}?admin_key=${adminKey}&active_only=${activeOnly}`;
       
       const response = await fetch(url);
       if (response.ok) {
@@ -62,7 +63,7 @@ const AnnouncementsManager: React.FC = () => {
     if (!adminKey) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/admin/announcements?admin_key=${adminKey}`, {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}?admin_key=${adminKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +90,7 @@ const AnnouncementsManager: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/admin/announcements/${editingAnnouncement.announcement_id}?admin_key=${adminKey}`,
+        `${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}/${editingAnnouncement.announcement_id}?admin_key=${adminKey}`,
         {
           method: 'PUT',
           headers: {
@@ -118,7 +119,7 @@ const AnnouncementsManager: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:8000/admin/announcements/${id}?admin_key=${adminKey}`,
+        `${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}/${id}?admin_key=${adminKey}`,
         {
           method: 'DELETE',
         }

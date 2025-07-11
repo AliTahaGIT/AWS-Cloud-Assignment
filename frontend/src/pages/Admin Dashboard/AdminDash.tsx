@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDash.css';
+import API_ENDPOINTS from '../../config/api';
 import NotificationsManager from '../../components/Admin/NotificationsManager';
 import UserManagement from '../../components/Admin/UserManagement';
 import RequestManagement from '../../components/Admin/RequestManagement';
@@ -40,7 +41,7 @@ const AdminDash: React.FC = () => {
   const fetchDashboardStats = async (key: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8000/admin/dashboard/stats?admin_key=${key}`);
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_DASHBOARD}?admin_key=${key}`);
       if (response.ok) {
         const data = await response.json();
         setStats(data.dashboard_stats);

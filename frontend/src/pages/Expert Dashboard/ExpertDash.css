@@ -497,3 +497,85 @@ html {
   border-color: var(--error-500);
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
 }
+
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+}
+
+.post-wrapper {
+  position: relative;
+}
+
+.post-actions {
+  padding: var(--space-4) var(--space-6);
+  background: var(--gradient-surface);
+  border-top: 1px solid var(--neutral-100);
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.edit-btn, .delete-btn {
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: var(--text-sm);
+}
+
+.edit-btn {
+  background: var(--gradient-primary);
+  color: var(--surface-primary);
+}
+
+.edit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.05);
+}
+
+.delete-btn {
+  background: var(--error-500);
+  color: var(--surface-primary);
+}
+
+.delete-btn:hover {
+  background: var(--error-600);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.no-posts {
+  text-align: center;
+  padding: var(--space-12);
+  background: var(--gradient-surface);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--neutral-200);
+  margin-top: var(--space-8);
+}
+
+.no-posts p {
+  color: var(--neutral-600);
+  font-size: var(--text-lg);
+}
+
+@media (max-width: 768px) {
+  .posts-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  
+  .post-actions {
+    flex-direction: column;
+  }
+  
+  .edit-btn, .delete-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

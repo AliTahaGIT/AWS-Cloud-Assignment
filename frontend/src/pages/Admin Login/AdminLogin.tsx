@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminLogin.css';
+import API_ENDPOINTS from '../../config/api';
 
 const AdminLogin: React.FC = () => {
   const [credentials, setCredentials] = useState({
@@ -18,7 +19,7 @@ const AdminLogin: React.FC = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/admin/admin-login', {
+      const response = await fetch(`${API_ENDPOINTS.ADMIN_LOGIN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

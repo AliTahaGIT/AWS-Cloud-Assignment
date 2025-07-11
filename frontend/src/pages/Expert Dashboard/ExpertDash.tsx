@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import "./ExpertDash.css"
+import API_ENDPOINTS from "../../config/api"
 import "../../components/Posts/Post.css"
 import EditPostModal from "../../components/Edit Post Modal/EditPostModal"
 import useToast from "../../hooks/useToast"
@@ -47,7 +48,7 @@ function ExpertDash() {
       if (activeTab === "my-posts") {
         try {
           setLoadingPosts(true)
-          const res = await fetch(`${import.meta.env.VITE_API_URL}/org-posts?organization=${name}`)
+          const res = await fetch(`${API_ENDPOINTS.ORG_POSTS}?organization=${name}`)
           const data = await res.json()
           setOrgPosts(data)
         } catch (error) {
@@ -96,7 +97,7 @@ function ExpertDash() {
     data.append("image", formData.image)
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/create-post`, {
+      const res = await fetch(`${API_ENDPOINTS.CREATE_POST}`, {
         method: "POST",
         body: data,
       })
@@ -130,7 +131,7 @@ function ExpertDash() {
 
   const handleUpdatePost = async (postId: string, title: string, description: string) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/update-post/${postId}`, {
+      const res = await fetch(`${API_ENDPOINTS.UPDATE_POST}/${postId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -144,7 +145,7 @@ function ExpertDash() {
       if (res.ok) {
         showSuccess("Post Updated Successfully!", "Your blog post has been updated.")
         // Refresh the posts list
-        const updatedRes = await fetch(`${import.meta.env.VITE_API_URL}/org-posts?organization=${name}`)
+        const updatedRes = await fetch(`${API_ENDPOINTS.ORG_POSTS}?organization=${name}`)
         const updatedData = await updatedRes.json()
         setOrgPosts(updatedData)
       } else {
@@ -157,8 +158,12 @@ function ExpertDash() {
   }
 
   const handleDeletePost = async (postId: string, PostS3Key: string) => {
+    if (!confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+      return;
+    }
+
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/delete-post/${postId}?s3key=${PostS3Key}`, {
+      const res = await fetch(`${API_ENDPOINTS.DELETE_POST}/${postId}?s3key=${PostS3Key}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -167,7 +172,20 @@ function ExpertDash() {
 
       if (res.ok) {
         showSuccess("Post Deleted Successfully!", "Your blog post has been removed.")
-        window.location.reload();
+        // Refresh the posts list instead of reloading the entire page
+        const fetchOrgPosts = async () => {
+          try {
+            setLoadingPosts(true)
+            const res = await fetch(`${API_ENDPOINTS.ORG_POSTS}?organization=${name}`)
+            const data = await res.json()
+            setOrgPosts(data)
+          } catch (error) {
+            console.error("Error fetching org posts:", error)
+          } finally {
+            setLoadingPosts(false)
+          }
+        }
+        fetchOrgPosts()
       } else {
         const error = await res.json()
         showError("Failed to Delete Post", error.detail || "Something went wrong while deleting the post.")
@@ -263,33 +281,40 @@ function ExpertDash() {
                 <p>No posts found for this organization.</p>
               </div>
             ) : (
-              orgPosts.map((post) => (
-                <div key={post.PostID} style={{ marginBottom: "2rem" }}>
-                  <div className="post-card" id={post.PostID}>
-                    <h2 className="post-title">{post.Post_Title}</h2>
-                    <p className="post-organization">{post.Post_Organization}</p>
-                    <div className="image-wrapper">
-                      <img src={post.Post_IMG || "/placeholder.svg"} alt={post.Post_Title} className="post-image" />
-                    </div>
-                    <div className="post-content">
-                      <p className="post-date">
-                        📅{" "}
-                        {new Date(post.Post_CreateDate).toLocaleDateString("en-US", {
-                          day: "numeric",
-                          month: "long",
-                          year: "numeric",
-                        })}
-                      </p>
-                      <p className="post-description">{post.Post_Desc}</p>
-                    </div>
-                    <div style={{ textAlign: "right", marginTop: "10px" }}>
-                      <button className="edit-btn" onClick={() => handleEditClick(post)}>
-                        Edit
-                      </button>
+              <div className="posts-grid">
+                {orgPosts.map((post) => (
+                  <div key={post.Post_ID} className="post-wrapper">
+                    <div className="post-card" id={post.Post_ID}>
+                      <div className="post-header">
+                        <h2 className="post-title">{post.Post_Title}</h2>
+                        <p className="post-organization">{post.Post_Organization}</p>
+                      </div>
+                      <div className="image-wrapper">
+                        <img src={post.Post_IMG || "/placeholder.svg"} alt={post.Post_Title} className="post-image" />
+                      </div>
+                      <div className="post-content">
+                        <p className="post-date">
+                          📅{" "}
+                          {new Date(post.Post_CreateDate).toLocaleDateString("en-US", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </p>
+                        <p className="post-description">{post.Post_Desc}</p>
+                      </div>
+                      <div className="post-actions">
+                        <button className="edit-btn" onClick={() => handleEditClick(post)}>
+                          Edit Post
+                        </button>
+                        <button className="delete-btn" onClick={() => handleDeletePost(post.Post_ID, post.Post_S3Key)}>
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </div>
         )

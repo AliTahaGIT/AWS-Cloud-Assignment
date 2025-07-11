@@ -1,6 +1,7 @@
 // TP070572
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
+import API_ENDPOINTS from '../../config/api';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
 
@@ -30,7 +31,7 @@ const UserManagement: React.FC = () => {
     if (!adminKey) return;
 
     setLoading(true);
-    let url = `http://localhost:8000/admin/users/all?admin_key=${adminKey}`;
+    let url = `${API_ENDPOINTS.ADMIN_USERS}?admin_key=${adminKey}`;
     
     if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
     if (roleFilter) url += `&role=${roleFilter}`;
@@ -57,7 +58,7 @@ const UserManagement: React.FC = () => {
     if (!selectedUser || !newPassword) return;
 
     const response = await fetch(
-      `http://localhost:8000/admin/users/${selectedUser.user_id}/reset-password?admin_key=${adminKey}`,
+      `${API_ENDPOINTS.BASE_URL}/admin/users/${selectedUser.user_id}/reset-password?admin_key=${adminKey}`,
       {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -79,7 +80,7 @@ const UserManagement: React.FC = () => {
     if (!selectedUser) return;
 
     const response = await fetch(
-      `http://localhost:8000/admin/users/${selectedUser.user_id}/profile?admin_key=${adminKey}`,
+      `${API_ENDPOINTS.BASE_URL}/admin/users/${selectedUser.user_id}/profile?admin_key=${adminKey}`,
       {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -102,7 +103,7 @@ const UserManagement: React.FC = () => {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/admin/users/${userId}?admin_key=${adminKey}`, {
+      const response = await fetch(`${API_ENDPOINTS.BASE_URL}/admin/users/${userId}?admin_key=${adminKey}`, {
         method: 'DELETE',
       });
 

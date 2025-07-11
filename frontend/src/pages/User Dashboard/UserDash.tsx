@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react"
 import "./UserDash.css"
+import API_ENDPOINTS from "../../config/api"
 
 ///////////// DONE BY ABDUZAFAR MADRAIMOV (TP065584) //////////////////////////////
 
@@ -40,7 +41,7 @@ function UserDash() {
     const fetchUserRequests = async () => {
       try {
         setLoading(true)
-        const response = await fetch(`http://localhost:8000/user-requests?email=${userEmail}`)
+        const response = await fetch(`${API_ENDPOINTS.USER_REQUESTS}?email=${userEmail}`)
         const data = await response.json()
 
         if (!response.ok) throw new Error(data.detail || "Failed to load requests.")
@@ -64,7 +65,7 @@ function UserDash() {
     const fetchNotifications = async () => {
       try {
         setNotificationsLoading(true)
-        const response = await fetch('http://localhost:8000/admin/public/notifications')
+        const response = await fetch(`${API_ENDPOINTS.PUBLIC_NOTIFICATIONS}`)
         const data = await response.json()
 
         if (response.ok) {
