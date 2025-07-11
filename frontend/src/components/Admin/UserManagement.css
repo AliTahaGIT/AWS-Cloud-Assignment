@@ -79,7 +79,6 @@
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-/* Table Styles */
 .users-table-container {
   background: var(--surface-primary);
   border-radius: var(--radius-xl);
@@ -123,7 +122,6 @@
   font-size: var(--text-base);
 }
 
-/* Badges */
 .role-badge {
   display: inline-block;
   padding: var(--space-1) var(--space-3);
@@ -165,7 +163,6 @@
 }
 
 
-/* Action Buttons */
 .action-buttons {
   display: flex;
   gap: var(--space-2);
@@ -208,7 +205,6 @@
   height: 18px;
 }
 
-/* Activity Modal */
 .activity-content {
   padding: var(--space-6);
 }
@@ -311,7 +307,6 @@
   padding: var(--space-8) 0;
 }
 
-/* Delete Confirmation Modal */
 .delete-confirmation {
   padding: var(--space-6);
   text-align: center;
@@ -346,7 +341,6 @@
   min-width: 80px;
 }
 
-/* Form Styles */
 .edit-form,
 .password-form,
 .ban-form {
@@ -401,7 +395,6 @@
   margin: 0;
 }
 
-/* Modal Overrides */
 .modal-content.large {
   max-width: 800px;
   max-height: 90vh;
@@ -417,7 +410,6 @@
   border-top: 1px solid var(--neutral-200);
 }
 
-/* Empty State */
 .empty-state {
   text-align: center;
   padding: var(--space-12) var(--space-6);
@@ -441,7 +433,6 @@
   font-size: var(--text-base);
 }
 
-/* Loading State */
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -464,7 +455,6 @@
   to { transform: rotate(360deg); }
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .user-management {
     padding: var(--space-3);
