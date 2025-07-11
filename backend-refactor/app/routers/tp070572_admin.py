@@ -183,13 +183,7 @@ async def admin_login(credentials: dict = Body(...)):
         "username": admin_user["username"]
     }
 
-@router.get("/admin-users")
-async def list_admin_users(_: str = Depends(verify_admin)):
-    response = users_table.scan(FilterExpression=Attr('role').eq('admin'))
-    admin_users = response.get("Items", [])
-    for user in admin_users:
-        user.pop("password", None)
-    return {"count": len(admin_users), "admin_users": admin_users}
+
 @router.get("/users/all")
 async def get_all_users(search: Optional[str] = Query(None), role: Optional[str] = Query(None), limit: int = Query(100), _: str = Depends(verify_admin)):
     scan_params = {"Limit": limit}
@@ -314,25 +308,7 @@ async def update_request_status(request_id: str = Path(...), status_data: dict =
     )
     return {"success": True, "new_status": new_status}
 
-@router.patch("/requests/{request_id}/assign")
-async def assign_request_to_expert(request_id: str = Path(...), assign_data: dict = Body(...), _: str = Depends(verify_admin)):
-    expert_id = assign_data.get("expert_id")
-    
-    expert_response = users_table.get_item(Key={"user_id": expert_id})
-    if "Item" not in expert_response or expert_response["Item"].get("role") != "expert":
-        raise HTTPException(status_code=400, detail="Invalid expert")
-    
-    requests_table.update_item(
-        Key={"request_id": request_id},
-        UpdateExpression="SET assigned_to = :expert_id, assigned_at = :timestamp, #status = :status",
-        ExpressionAttributeValues={
-            ":expert_id": expert_id,
-            ":timestamp": datetime.utcnow().isoformat(),
-            ":status": "in_progress"
-        },
-        ExpressionAttributeNames={"#status": "status"}
-    )
-    return {"success": True, "assigned_to": expert_id}
+
 
 @router.post("/requests/{request_id}/notes")
 async def add_admin_note_to_request(request_id: str = Path(...), note_data: dict = Body(...), _: str = Depends(verify_admin)):

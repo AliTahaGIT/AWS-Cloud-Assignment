@@ -34,7 +34,6 @@ const AdminDash: React.FC = () => {
     
     setAdminName(storedAdminName || 'Admin');
     
-    // Fetch data only after authentication is verified
     fetchDashboardStats(storedAdminKey);
   }, [navigate]);
 

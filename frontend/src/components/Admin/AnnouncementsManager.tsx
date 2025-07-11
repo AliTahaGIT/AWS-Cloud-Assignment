@@ -1,4 +1,3 @@
-// Announcements Manager Component
 // Author: TP070572
 import React, { useState, useEffect } from 'react';
 import './AnnouncementsManager.css';

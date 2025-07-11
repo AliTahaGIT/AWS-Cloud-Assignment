@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.routers.tp069502_posts import router as tp069502_router
 from app.routers.tp070007_auth import router as tp070007_router
 from app.routers.tp065584_users import router as tp065584_router
-from app.routers.tp070572_admin import router as tp_admin_router
+from app.routers.tp070572_admin import router as tp070572_router
 
 app = FastAPI(
     title="Cloud60 Flood Management System",
@@ -22,4 +22,4 @@ app.add_middleware(
 app.include_router(tp069502_router)
 app.include_router(tp070007_router)
 app.include_router(tp065584_router)
-app.include_router(tp_admin_router)
+app.include_router(tp070572_router)
