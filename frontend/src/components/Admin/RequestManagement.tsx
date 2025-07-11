@@ -28,11 +28,7 @@ interface AdminNote {
   created_at: string;
 }
 
-interface Expert {
-  user_id: string;
-  full_name: string;
-  email: string;
-}
+
 
 const RequestManagement: React.FC = () => {
   const [requests, setRequests] = useState<Request[]>([]);
@@ -42,13 +38,10 @@ const RequestManagement: React.FC = () => {
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [newStatus, setNewStatus] = useState('');
   const [adminNote, setAdminNote] = useState('');
   const [newNote, setNewNote] = useState('');
-  const [experts, setExperts] = useState<Expert[]>([]);
-  const [selectedExpert, setSelectedExpert] = useState('');
   const [adminKey] = useState(localStorage.getItem('admin_key') || '');
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
@@ -80,16 +73,7 @@ const RequestManagement: React.FC = () => {
     }
   };
 
-  const fetchExperts = async () => {
-    try {
-      const response = await fetch(`${API_ENDPOINTS.ADMIN_USERS}?admin_key=${adminKey}&role=expert`);
-      if (response.ok) {
-        const data = await response.json();
-        setExperts(data.users);
-      }
-    } catch (error) {
-    }
-  };
+
 
   const updateRequestStatus = async () => {
     if (!selectedRequest || !newStatus) return;
@@ -115,33 +99,6 @@ const RequestManagement: React.FC = () => {
     }
   };
 
-  const assignRequestToExpert = async () => {
-    if (!selectedRequest || !selectedExpert) return;
-
-    try {
-      const response = await fetch(
-        `${API_ENDPOINTS.BASE_URL}/admin/requests/${selectedRequest.request_id}/assign?admin_key=${adminKey}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ expert_id: selectedExpert })
-        }
-      );
-
-      if (response.ok) {
-        showSuccess('Success', 'Request assigned to expert successfully');
-        await fetchRequests();
-        setShowAssignModal(false);
-        setSelectedExpert('');
-        setSelectedRequest(null);
-      } else {
-        const error = await response.json();
-        showError('Error', error.detail || 'Failed to assign request');
-      }
-    } catch (error) {
-      showError('Network Error', 'Unable to assign request');
-    }
-  };
 
   const addAdminNote = async () => {
     if (!selectedRequest || !newNote) return;
@@ -190,7 +147,6 @@ const RequestManagement: React.FC = () => {
 
   useEffect(() => {
     fetchRequests();
-    fetchExperts();
   }, [searchTerm, statusFilter]);
 
   return (
@@ -344,12 +300,6 @@ const RequestManagement: React.FC = () => {
                     <label>Created:</label>
                     <span>{new Date(selectedRequest.created_at).toLocaleString()}</span>
                   </div>
-                  {selectedRequest.assigned_to && (
-                    <div className="detail-item">
-                      <label>Assigned To:</label>
-                      <span>{experts.find(e => e.user_id === selectedRequest.assigned_to)?.full_name || 'Unknown'}</span>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -382,15 +332,6 @@ const RequestManagement: React.FC = () => {
               )}
 
               <div className="detail-actions">
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setShowDetailsModal(false);
-                    setShowAssignModal(true);
-                  }}
-                >
-                  Assign to Expert
-                </button>
                 <button
                   className="btn btn-secondary"
                   onClick={() => {
