@@ -1,4 +1,5 @@
-boto3
-fastapi
+fastapi==0.99.0
 mangum
+boto3
+uvicorn
 werkzeug
