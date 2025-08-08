@@ -1,13 +1,16 @@
 import boto3
 import json
+import uuid
+from datetime import datetime
 
 from jwt_utils import verify_admin_token
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, Query, Body, Depends
 from mangum import Mangum
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 
 app = FastAPI()
+
 
 dynamodb = boto3.resource("dynamodb")
 dynamodb_client = boto3.client("dynamodb")
@@ -89,6 +92,30 @@ async def get_public_notifications(
         return {"count": len(notifications), "notifications": notifications}
     except Exception as e:
         return {"count": 0, "notifications": [], "error": str(e)}
+
+@app.post("/prod/admin/notifications")
+async def create_flood_notification(
+    notification: dict = Body(...),
+    _: dict = Depends(verify_admin_token)
+):
+    
+    notification_id = str(uuid.uuid4())
+    timestamp = datetime.utcnow().isoformat()
+    
+    item = {
+        "id": notification_id,
+        "notification_id": notification_id,
+        "title": notification.get("title"),
+        "message": notification.get("message"),
+        "severity": notification.get("severity"),
+        "affected_regions": notification.get("affected_regions", []),
+        "is_active": notification.get("is_active", True),
+        "created_at": timestamp,
+        "updated_at": timestamp
+    }
+    
+    notifications_table.put_item(Item=item)
+    return {"notification_id": notification_id, "data": item}
 
 def handler(event, context):
     print(f"Received event: {json.dumps(event)}")
