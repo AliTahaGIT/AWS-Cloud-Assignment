@@ -84,16 +84,18 @@ function RequestForm() {
     }
 
     try {
-      const form = new FormData();
-      form.append("user_email", user_email);
-      form.append("user_name", user_name);
-      form.append("req_type", formData.type);
-      form.append("req_details", formData.details);
-      form.append("req_region", formData.region);
-
       const response = await fetch(`${API_ENDPOINTS.SUBMIT_REQUEST}`, {
         method: "POST",
-        body: form,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_email: user_email,
+          user_name: user_name,
+          req_type: formData.type,
+          req_details: formData.details,
+          req_region: formData.region,
+        }),
       });
 
       const result = await response.json();

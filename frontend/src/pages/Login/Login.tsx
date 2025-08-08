@@ -73,15 +73,16 @@ function Login() {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("email", loginData.email);
-      formData.append("password", loginData.password);
-      formData.append("role", loginData.role); 
-
-
       const response = await fetch(API_ENDPOINTS.LOGIN, {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: loginData.email,
+          password: loginData.password,
+          role: loginData.role,
+        }),
       });
 
       const result = await response.json();
@@ -149,16 +150,17 @@ function Login() {
     setIsLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append("username", fullName);
-      formData.append("email", email);
-      formData.append("password", password);
-      formData.append("role", role); 
-
-
       const response = await fetch(API_ENDPOINTS.REGISTER, {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: fullName,
+          email: email,
+          password: password,
+          role: role,
+        }),
       });
 
       const result = await response.json();
