@@ -16,7 +16,7 @@ app.add_middleware(
 dynamodb = boto3.resource("dynamodb")
 users_table = dynamodb.Table("Users")      
 s3 = boto3.client("s3")
-BUCKET = "cloud60"                         
+BUCKET = "g60project"                         
 
 @app.put("/prod/update_user_profile")
 async def update_user_profile(
