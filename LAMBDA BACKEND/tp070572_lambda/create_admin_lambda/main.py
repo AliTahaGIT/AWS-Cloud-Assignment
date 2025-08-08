@@ -25,19 +25,16 @@ dynamodb = boto3.resource("dynamodb")
 dynamodb_client = boto3.client("dynamodb")
 
 def ensure_table_exists():
-    """Create Users table if it doesn't exist or add default admin"""
     table_name = "Users"
     try:
         dynamodb_client.describe_table(TableName=table_name)
         users_table = dynamodb.Table(table_name)
         
-        # Check if admin user exists
         response = users_table.scan(
             FilterExpression=Attr('username').eq('admin')
         )
         
         if not response.get("Items"):
-            # Create default admin user
             users_table.put_item(Item={
                 "user_id": str(uuid.uuid4()),
                 "username": "admin",
@@ -63,7 +60,6 @@ def ensure_table_exists():
             waiter = dynamodb_client.get_waiter('table_exists')
             waiter.wait(TableName=table_name)
             
-            # Create default admin user
             users_table = dynamodb.Table(table_name)
             users_table.put_item(Item={
                 "user_id": str(uuid.uuid4()),

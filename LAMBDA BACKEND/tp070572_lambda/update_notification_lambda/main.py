@@ -23,7 +23,6 @@ dynamodb = boto3.resource("dynamodb")
 dynamodb_client = boto3.client("dynamodb")
 
 def ensure_table_exists():
-    """Create Notifications table if it doesn't exist"""
     table_name = "Notifications"
     try:
         dynamodb_client.describe_table(TableName=table_name)

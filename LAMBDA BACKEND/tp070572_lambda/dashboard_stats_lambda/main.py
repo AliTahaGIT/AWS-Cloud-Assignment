@@ -23,7 +23,6 @@ dynamodb = boto3.resource("dynamodb")
 dynamodb_client = boto3.client("dynamodb")
 
 def ensure_tables_exist():
-    """Create all required tables if they don't exist"""
     tables_config = {
         "Users": {
             "KeySchema": [{"AttributeName": "username", "KeyType": "HASH"}],
@@ -68,14 +67,12 @@ async def get_dashboard_stats(_: dict = Depends(verify_admin_token)):
     stats = {}
     
     try:
-        # Get user stats
         users_table = dynamodb.Table("Users")
         users_response = users_table.scan()
         users = users_response.get("Items", [])
         stats["total_users"] = len(users)
         stats["admin_users"] = len([u for u in users if u.get("isAdmin", False)])
         
-        # Get request stats
         requests_table = dynamodb.Table("Requests")
         requests_response = requests_table.scan()
         requests = requests_response.get("Items", [])
@@ -83,19 +80,16 @@ async def get_dashboard_stats(_: dict = Depends(verify_admin_token)):
         stats["pending_requests"] = len([r for r in requests if r.get("status") == "pending"])
         stats["resolved_requests"] = len([r for r in requests if r.get("status") == "resolved"])
         
-        # Get notification stats
         notifications_table = dynamodb.Table("Notifications")
         notif_response = notifications_table.scan()
         notifications = notif_response.get("Items", [])
         stats["total_notifications"] = len(notifications)
         stats["active_notifications"] = len([n for n in notifications if n.get("is_active", False)])
         
-        # Get recent activity (last 7 days)
         week_ago = (datetime.utcnow() - timedelta(days=7)).isoformat()
         recent_requests = [r for r in requests if r.get("created_at", "") > week_ago]
         stats["requests_last_week"] = len(recent_requests)
         
-        # Get announcements stats
         try:
             announcements_table = dynamodb.Table("Announcements")
             announce_response = announcements_table.scan()
@@ -106,7 +100,6 @@ async def get_dashboard_stats(_: dict = Depends(verify_admin_token)):
             stats["total_announcements"] = 0
             stats["active_announcements"] = 0
         
-        # Get posts stats
         try:
             posts_table = dynamodb.Table("Posts")
             posts_response = posts_table.scan()

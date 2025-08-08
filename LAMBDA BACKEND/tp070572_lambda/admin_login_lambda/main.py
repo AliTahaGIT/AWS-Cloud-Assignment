@@ -20,8 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# JWT configuration
-JWT_SECRET = os.environ.get("JWT_SECRET", "your-secret-key-change-in-production")
+JWT_SECRET = os.environ.get("JWT_SECRET", "token")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
@@ -29,7 +28,6 @@ dynamodb = boto3.resource("dynamodb")
 dynamodb_client = boto3.client("dynamodb")
 
 def ensure_table_exists():
-    """Check if Users table exists"""
     table_name = "Users"
     try:
         dynamodb_client.describe_table(TableName=table_name)
@@ -49,11 +47,9 @@ def verify_password(password: str, hashed: str) -> bool:
     try:
         return check_password_hash(hashed, password)
     except:
-        # Fallback for unhashed passwords (development only)
         return password == hashed
 
 def create_jwt_token(user_data: dict) -> str:
-    """Create a JWT token for the authenticated admin"""
     payload = {
         "user_id": user_data["user_id"],
         "username": user_data["username"],
@@ -72,7 +68,6 @@ async def admin_login(credentials: dict = Body(...)):
     if not username or not password:
         raise HTTPException(status_code=400, detail="Username and password required")
     
-    # Query for admin user
     response = users_table.scan(
         FilterExpression=Attr('username').eq(username)
     )
@@ -84,19 +79,15 @@ async def admin_login(credentials: dict = Body(...)):
     
     user = users[0]
     
-    # Check if user is admin (either by role or isAdmin flag)
     is_admin = user.get("role") == "admin" or user.get("isAdmin", False)
     if not is_admin:
         raise HTTPException(status_code=403, detail="Access denied - admin privileges required")
     
-    # Verify password
     if not verify_password(password, user.get("password", "")):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    # Create JWT token
     token = create_jwt_token(user)
     
-    # Return authentication response
     return {
         "success": True,
         "user_id": user["user_id"],

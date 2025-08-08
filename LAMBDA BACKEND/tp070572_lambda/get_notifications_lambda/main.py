@@ -24,7 +24,6 @@ dynamodb = boto3.resource("dynamodb")
 dynamodb_client = boto3.client("dynamodb")
 
 def ensure_table_exists():
-    """Create Notifications table if it doesn't exist"""
     table_name = "Notifications"
     try:
         dynamodb_client.describe_table(TableName=table_name)
@@ -38,16 +37,13 @@ def ensure_table_exists():
                 AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "S"}],
                 BillingMode="PAY_PER_REQUEST"
             )
-            # Wait for table to be created
             waiter = dynamodb_client.get_waiter('table_exists')
             waiter.wait(TableName=table_name)
             print(f"Table {table_name} created successfully")
 
-# Ensure table exists on Lambda cold start
 ensure_table_exists()
 notifications_table = dynamodb.Table("Notifications")
 
-# Routes with /prod prefix for API Gateway
 @app.get("/prod/test_notifications")
 async def test_route():
     return {"message": "Test route works!", "path": "/prod/test_notifications"}
@@ -125,22 +121,10 @@ async def create_flood_notification(
     notifications_table.put_item(Item=item)
     return {"notification_id": notification_id, "data": item}
 
-def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
+def handler(event, context):    
     
-    # Fix missing fields in event
-    if "requestContext" in event:
-        if "http" not in event["requestContext"]:
-            event["requestContext"]["http"] = {}
-        if "sourceIp" not in event["requestContext"]["http"]:
-            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
-    
-    # Create Mangum handler
     mangum_handler = Mangum(app, lifespan="off")
     
-    # Call the handler
     response = mangum_handler(event, context)
-    
-    print(f"Returning response: {json.dumps(response)}")
-    
+        
     return response

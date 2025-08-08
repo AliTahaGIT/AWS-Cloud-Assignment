@@ -22,7 +22,6 @@ dynamodb = boto3.resource("dynamodb")
 dynamodb_client = boto3.client("dynamodb")
 
 def ensure_table_exists():
-    """Create Requests table if it doesn't exist"""
     table_name = "Requests"
     try:
         dynamodb_client.describe_table(TableName=table_name)
