@@ -1,9 +1,9 @@
-// TP070572
 import React, { useState, useEffect } from 'react';
 import './NotificationsManager.css';
 import API_ENDPOINTS from '../../config/api';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
+import apiService from '../../services/api';
 
 interface FloodNotification {
   notification_id: string;
@@ -38,7 +38,6 @@ const NotificationsManager: React.FC = () => {
   });
   const [filterSeverity, setFilterSeverity] = useState<string>('');
   const [filterRegion, setFilterRegion] = useState<string>('');
-  const [adminKey] = useState(localStorage.getItem('admin_key') || '');
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const regions = [
@@ -48,20 +47,16 @@ const NotificationsManager: React.FC = () => {
   const severityLevels = ['low', 'medium', 'high', 'critical'];
 
   const fetchNotifications = async () => {
-    if (!adminKey) return;
     setLoading(true);
     try {
-      let url = `${API_ENDPOINTS.ADMIN_NOTIFICATIONS}?admin_key=${adminKey}`;
-      if (filterSeverity) url += `&severity=${filterSeverity}`;
-      if (filterRegion) url += `&region=${filterRegion}`;
+      let url = API_ENDPOINTS.ADMIN_NOTIFICATIONS;
+      const params = new URLSearchParams();
+      if (filterSeverity) params.append('severity', filterSeverity);
+      if (filterRegion) params.append('region', filterRegion);
+      if (params.toString()) url += `?${params.toString()}`;
       
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setNotifications(data.notifications);
-      } else if (response.status === 403) {
-        window.location.href = '/admin-login';
-      }
+      const data = await apiService.get<any>(url);
+      setNotifications(data.notifications || []);
     } catch (error) {
       console.error('Fetch failed:', error);
     }
@@ -69,39 +64,27 @@ const NotificationsManager: React.FC = () => {
   };
 
   const createNotification = async () => {
-    if (!adminKey) return;
     try {
-      const response = await fetch(`${API_ENDPOINTS.ADMIN_NOTIFICATIONS}?admin_key=${adminKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      if (response.ok) {
-        showSuccess('Created', 'Notification created successfully.');
-        await fetchNotifications();
-        setShowCreateModal(false);
-        resetForm();
-      } else {
-        const errorData = await response.json();
-        showError('Failed', errorData.detail || 'Creation failed.');
-      }
+      await apiService.post(API_ENDPOINTS.ADMIN_NOTIFICATIONS, formData);
+      showSuccess('Created', 'Notification created successfully.');
+      await fetchNotifications();
+      setShowCreateModal(false);
+      resetForm();
     } catch (error) {
-      showError('Error', 'Unable to connect.');
+      showError('Error', error instanceof Error ? error.message : 'Unable to connect.');
     }
   };
 
   const updateNotification = async () => {
     if (!editingNotification) return;
     try {
-      const response = await fetch(
-        `${API_ENDPOINTS.ADMIN_NOTIFICATIONS}/${editingNotification.notification_id}?admin_key=${adminKey}`,
-        { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) }
+      await apiService.put(
+        `${API_ENDPOINTS.ADMIN_NOTIFICATIONS}/${editingNotification.notification_id}`,
+        formData
       );
-      if (response.ok) {
-        await fetchNotifications();
-        setEditingNotification(null);
-        resetForm();
-      }
+      await fetchNotifications();
+      setEditingNotification(null);
+      resetForm();
     } catch (error) {
       console.error('Update failed:', error);
     }
@@ -110,11 +93,8 @@ const NotificationsManager: React.FC = () => {
   const deleteNotification = async (id: string) => {
     if (!confirm('Delete this notification?')) return;
     try {
-      const response = await fetch(
-        `${API_ENDPOINTS.ADMIN_NOTIFICATIONS}/${id}?admin_key=${adminKey}`,
-        { method: 'DELETE' }
-      );
-      if (response.ok) await fetchNotifications();
+      await apiService.delete(`${API_ENDPOINTS.ADMIN_NOTIFICATIONS}/${id}`);
+      await fetchNotifications();
     } catch (error) {
       console.error('Delete failed:', error);
     }

@@ -1,8 +1,9 @@
-// TP070572
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDash.css';
 import API_ENDPOINTS from '../../config/api';
+import authUtils from '../../utils/auth';
+import apiService from '../../services/api';
 import NotificationsManager from '../../components/Admin/NotificationsManager';
 import UserManagement from '../../components/Admin/UserManagement';
 import RequestManagement from '../../components/Admin/RequestManagement';
@@ -24,40 +25,31 @@ const AdminDash: React.FC = () => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   useEffect(() => {
-    const storedAdminKey = localStorage.getItem('admin_key');
-    const storedAdminName = localStorage.getItem('admin_name');
-    
-    if (!storedAdminKey) {
+    if (!authUtils.isAuthenticated()) {
       navigate('/admin-login');
       return;
     }
     
-    setAdminName(storedAdminName || 'Admin');
-    
-    fetchDashboardStats(storedAdminKey);
+    setAdminName(authUtils.getAdminName() || 'Admin');
+    fetchDashboardStats();
   }, [navigate]);
 
-  const fetchDashboardStats = async (key: string) => {
+  const fetchDashboardStats = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_ENDPOINTS.ADMIN_DASHBOARD}?admin_key=${key}`);
-      if (response.ok) {
-        const data = await response.json();
-        setStats(data.dashboard_stats);
-      } else if (response.status === 403) {
-        localStorage.removeItem('admin_key');
-        localStorage.removeItem('admin_name');
+      const data = await apiService.get<any>(API_ENDPOINTS.ADMIN_DASHBOARD);
+      setStats(data.stats || data.dashboard_stats);
+    } catch (error) {
+      console.error('Failed to fetch dashboard stats:', error);
+      if (error instanceof Error && error.message.includes('401')) {
         navigate('/admin-login');
       }
-    } catch (error) {
-      console.error('Stats fetch failed:', error);
     }
     setLoading(false);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_key');
-    localStorage.removeItem('admin_name');
+    authUtils.clearAuth();
     navigate('/admin-login');
   };
 

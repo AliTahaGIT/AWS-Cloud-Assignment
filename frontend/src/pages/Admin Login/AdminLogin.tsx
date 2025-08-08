@@ -1,8 +1,8 @@
-// TP070572
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminLogin.css';
 import API_ENDPOINTS from '../../config/api';
+import authUtils from '../../utils/auth';
 
 const AdminLogin: React.FC = () => {
   const [credentials, setCredentials] = useState({
@@ -29,8 +29,12 @@ const AdminLogin: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        localStorage.setItem('admin_key', data.admin_key);
-        localStorage.setItem('admin_name', data.username);
+        authUtils.saveToken({
+          token: data.token,
+          expires_in: data.expires_in,
+          token_type: data.token_type
+        });
+        authUtils.saveAdminInfo(data.username, data.user_id);
         navigate('/admin-dashboard');
       } else {
         const errorData = await response.json();

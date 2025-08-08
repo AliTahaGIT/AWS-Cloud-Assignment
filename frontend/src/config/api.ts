@@ -6,14 +6,14 @@ export const API_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/prod/login`,
   REGISTER: `${API_BASE_URL}/prod/register`,
   
-  ADMIN_LOGIN: `${API_BASE_URL}/admin/admin-login`,
-  ADMIN_DASHBOARD: `${API_BASE_URL}/admin/dashboard/stats`,
-  ADMIN_USERS: `${API_BASE_URL}/admin/users/all`,
-  ADMIN_REQUESTS: `${API_BASE_URL}/admin/requests/all`,
-  ADMIN_NOTIFICATIONS: `${API_BASE_URL}/admin/notifications`,
-  ADMIN_ANNOUNCEMENTS: `${API_BASE_URL}/admin/announcements`,
-  PUBLIC_NOTIFICATIONS: `${API_BASE_URL}/admin/public/notifications`,
-  PUBLIC_ANNOUNCEMENTS: `${API_BASE_URL}/admin/public/announcements`,
+  ADMIN_LOGIN: `${API_BASE_URL}/prod/admin/login`,
+  ADMIN_DASHBOARD: `${API_BASE_URL}/prod/admin/dashboard/stats`,
+  ADMIN_USERS: `${API_BASE_URL}/prod/admin/users`,
+  ADMIN_REQUESTS: `${API_BASE_URL}/prod/admin/requests`,
+  ADMIN_NOTIFICATIONS: `${API_BASE_URL}/prod/admin/notifications`,
+  ADMIN_ANNOUNCEMENTS: `${API_BASE_URL}/prod/admin/announcements`,
+  PUBLIC_NOTIFICATIONS: `${API_BASE_URL}/prod/notifications`,
+  PUBLIC_ANNOUNCEMENTS: `${API_BASE_URL}/prod/public/announcements`,
   
   
   USER_REQUESTS: `${API_BASE_URL}/user-requests`,

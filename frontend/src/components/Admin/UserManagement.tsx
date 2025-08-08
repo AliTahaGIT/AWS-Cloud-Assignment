@@ -1,9 +1,9 @@
-// TP070572
 import React, { useState, useEffect } from 'react';
 import './UserManagement.css';
 import API_ENDPOINTS from '../../config/api';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
+import apiService from '../../services/api';
 
 interface User {
   user_id: string;
@@ -24,30 +24,22 @@ const UserManagement: React.FC = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [editFormData, setEditFormData] = useState<Partial<User>>({});
-  const [adminKey] = useState(localStorage.getItem('admin_key') || '');
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const fetchUsers = async () => {
-    if (!adminKey) return;
-
     setLoading(true);
-    let url = `${API_ENDPOINTS.ADMIN_USERS}?admin_key=${adminKey}`;
+    let url = API_ENDPOINTS.ADMIN_USERS;
+    const params = new URLSearchParams();
     
-    if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
-    if (roleFilter) url += `&role=${roleFilter}`;
+    if (searchTerm) params.append('search', searchTerm);
+    if (roleFilter) params.append('role', roleFilter);
+    if (params.toString()) url += `?${params.toString()}`;
 
     try {
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users);
-      } else if (response.status === 403) {
-        window.location.href = '/admin-login';
-      } else {
-        showError('Error', 'Failed to fetch users');
-      }
+      const data = await apiService.get<any>(url);
+      setUsers(data.users || []);
     } catch (error) {
-      showError('Network Error', 'Unable to connect to server');
+      showError('Error', error instanceof Error ? error.message : 'Failed to fetch users');
     }
     setLoading(false);
   };
@@ -57,21 +49,17 @@ const UserManagement: React.FC = () => {
   const handleResetPassword = async () => {
     if (!selectedUser || !newPassword) return;
 
-    const response = await fetch(
-      `${API_ENDPOINTS.BASE_URL}/admin/users/${selectedUser.user_id}/reset-password?admin_key=${adminKey}`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ new_password: newPassword })
-      }
-    );
+    try {
+      await apiService.patch(
+        `${API_ENDPOINTS.BASE_URL}/admin/users/${selectedUser.user_id}/reset-password`,
+        { new_password: newPassword }
+      );
 
-    if (response.ok) {
       showSuccess('Success', 'Password reset');
       setShowPasswordModal(false);
       setNewPassword('');
       setSelectedUser(null);
-    } else {
+    } catch (error) {
       showError('Error', 'Failed to reset password');
     }
   };
@@ -79,22 +67,18 @@ const UserManagement: React.FC = () => {
   const handleUpdateProfile = async () => {
     if (!selectedUser) return;
 
-    const response = await fetch(
-      `${API_ENDPOINTS.BASE_URL}/admin/users/${selectedUser.user_id}/profile?admin_key=${adminKey}`,
-      {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editFormData)
-      }
-    );
+    try {
+      await apiService.put(
+        `${API_ENDPOINTS.BASE_URL}/admin/users/${selectedUser.user_id}/profile`,
+        editFormData
+      );
 
-    if (response.ok) {
       showSuccess('Success', 'Profile updated');
       fetchUsers();
       setShowEditModal(false);
       setEditFormData({});
       setSelectedUser(null);
-    } else {
+    } catch (error) {
       showError('Error', 'Failed to update profile');
     }
   };
@@ -103,16 +87,10 @@ const UserManagement: React.FC = () => {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
 
     try {
-      const response = await fetch(`${API_ENDPOINTS.BASE_URL}/admin/users/${userId}?admin_key=${adminKey}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        showSuccess('Success', 'User deleted');
-        fetchUsers();
-      } else {
-        showError('Error', 'Failed to delete user');
-      }
+      await apiService.delete(`${API_ENDPOINTS.BASE_URL}/admin/users/${userId}`);
+      
+      showSuccess('Success', 'User deleted');
+      fetchUsers();
     } catch (error) {
       showError('Network Error', 'Unable to delete user');
     }

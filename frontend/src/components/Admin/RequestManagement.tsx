@@ -1,9 +1,9 @@
-// TP070572
 import React, { useState, useEffect } from 'react';
 import './RequestManagement.css';
 import API_ENDPOINTS from '../../config/api';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
+import apiService from '../../services/api';
 
 interface Request {
   request_id: string;
@@ -42,30 +42,22 @@ const RequestManagement: React.FC = () => {
   const [newStatus, setNewStatus] = useState('');
   const [adminNote, setAdminNote] = useState('');
   const [newNote, setNewNote] = useState('');
-  const [adminKey] = useState(localStorage.getItem('admin_key') || '');
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const statusOptions = ['pending', 'in_progress', 'resolved', 'cancelled'];
 
   const fetchRequests = async () => {
-    if (!adminKey) return;
-
     try {
       setLoading(true);
-      let url = `${API_ENDPOINTS.ADMIN_REQUESTS}?admin_key=${adminKey}`;
+      let url = API_ENDPOINTS.ADMIN_REQUESTS;
+      const params = new URLSearchParams();
       
-      if (statusFilter) url += `&status=${statusFilter}`;
-      if (searchTerm) url += `&search=${encodeURIComponent(searchTerm)}`;
+      if (statusFilter) params.append('status', statusFilter);
+      if (searchTerm) params.append('search', searchTerm);
+      if (params.toString()) url += `?${params.toString()}`;
 
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setRequests(data.requests);
-      } else if (response.status === 403) {
-        window.location.href = '/admin-login';
-      } else {
-        showError('Error', 'Failed to fetch requests');
-      }
+      const data = await apiService.get<any>(url);
+      setRequests(data.requests || []);
     } catch (error) {
       showError('Network Error', 'Unable to connect to server');
     } finally {
@@ -78,23 +70,19 @@ const RequestManagement: React.FC = () => {
   const updateRequestStatus = async () => {
     if (!selectedRequest || !newStatus) return;
 
-    const response = await fetch(
-      `${API_ENDPOINTS.BASE_URL}/admin/requests/${selectedRequest.request_id}/status?admin_key=${adminKey}`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus, admin_note: adminNote })
-      }
-    );
+    try {
+      await apiService.patch(
+        `${API_ENDPOINTS.BASE_URL}/admin/requests/${selectedRequest.request_id}/status`,
+        { status: newStatus, admin_note: adminNote }
+      );
 
-    if (response.ok) {
       showSuccess('Success', 'Status updated');
       fetchRequests();
       setShowStatusModal(false);
       setNewStatus('');
       setAdminNote('');
       setSelectedRequest(null);
-    } else {
+    } catch (error) {
       showError('Error', 'Failed to update status');
     }
   };
@@ -104,29 +92,20 @@ const RequestManagement: React.FC = () => {
     if (!selectedRequest || !newNote) return;
 
     try {
-      const response = await fetch(
-        `${API_ENDPOINTS.BASE_URL}/admin/requests/${selectedRequest.request_id}/notes?admin_key=${adminKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ note: newNote })
-        }
+      await apiService.post(
+        `${API_ENDPOINTS.BASE_URL}/admin/requests/${selectedRequest.request_id}/notes`,
+        { note: newNote }
       );
 
-      if (response.ok) {
-        showSuccess('Success', 'Note added successfully');
-        await fetchRequests();
-        setShowNoteModal(false);
-        setNewNote('');
-        
-        const updatedRequest = requests.find(r => r.request_id === selectedRequest.request_id);
-        if (updatedRequest) {
-          setSelectedRequest(updatedRequest);
-          setShowDetailsModal(true);
-        }
-      } else {
-        const error = await response.json();
-        showError('Error', error.detail || 'Failed to add note');
+      showSuccess('Success', 'Note added successfully');
+      await fetchRequests();
+      setShowNoteModal(false);
+      setNewNote('');
+      
+      const updatedRequest = requests.find(r => r.request_id === selectedRequest.request_id);
+      if (updatedRequest) {
+        setSelectedRequest(updatedRequest);
+        setShowDetailsModal(true);
       }
     } catch (error) {
       showError('Network Error', 'Unable to add note');

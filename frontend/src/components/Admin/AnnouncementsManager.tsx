@@ -1,9 +1,9 @@
-// Author: TP070572
 import React, { useState, useEffect } from 'react';
 import './AnnouncementsManager.css';
 import API_ENDPOINTS from '../../config/api';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
+import apiService from '../../services/api';
 
 interface Announcement {
   announcement_id: string;
@@ -32,53 +32,30 @@ const AnnouncementsManager: React.FC = () => {
     is_active: true
   });
   const [activeOnly, setActiveOnly] = useState(true);
-  const [adminKey] = useState(localStorage.getItem('admin_key') || '');
   const { toasts, removeToast, showSuccess, showError } = useToast();
 
   const fetchAnnouncements = async () => {
-    if (!adminKey) return;
-
     try {
       setLoading(true);
-      const url = `${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}?admin_key=${adminKey}&active_only=${activeOnly}`;
+      const url = `${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}?active_only=${activeOnly}`;
       
-      const response = await fetch(url);
-      if (response.ok) {
-        const data = await response.json();
-        setAnnouncements(data.announcements);
-      } else if (response.status === 403) {
-        window.location.href = '/admin-login';
-      } else {
-        showError('Error', 'Failed to fetch announcements');
-      }
+      const data = await apiService.get<any>(url);
+      setAnnouncements(data.announcements || []);
     } catch (error) {
-      showError('Network Error', 'Unable to connect to server');
+      showError('Error', 'Failed to fetch announcements');
     } finally {
       setLoading(false);
     }
   };
 
   const createAnnouncement = async () => {
-    if (!adminKey) return;
-
     try {
-      const response = await fetch(`${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}?admin_key=${adminKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      await apiService.post<any>(API_ENDPOINTS.ADMIN_ANNOUNCEMENTS, formData);
 
-      if (response.ok) {
-        showSuccess('Announcement Created', 'Global announcement has been created successfully.');
-        await fetchAnnouncements();
-        setShowCreateModal(false);
-        resetForm();
-      } else {
-        const errorData = await response.json();
-        showError('Creation Failed', errorData.detail || 'Unable to create announcement.');
-      }
+      showSuccess('Announcement Created', 'Global announcement has been created successfully.');
+      await fetchAnnouncements();
+      setShowCreateModal(false);
+      resetForm();
     } catch (error) {
       showError('Network Error', 'Unable to connect to server.');
     }
@@ -88,26 +65,15 @@ const AnnouncementsManager: React.FC = () => {
     if (!editingAnnouncement) return;
 
     try {
-      const response = await fetch(
-        `${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}/${editingAnnouncement.announcement_id}?admin_key=${adminKey}`,
-        {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        }
+      await apiService.put<any>(
+        `${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}/${editingAnnouncement.announcement_id}`,
+        formData
       );
 
-      if (response.ok) {
-        showSuccess('Success', 'Announcement updated successfully');
-        await fetchAnnouncements();
-        setEditingAnnouncement(null);
-        resetForm();
-      } else {
-        const errorData = await response.json();
-        showError('Update Failed', errorData.detail || 'Unable to update announcement');
-      }
+      showSuccess('Success', 'Announcement updated successfully');
+      await fetchAnnouncements();
+      setEditingAnnouncement(null);
+      resetForm();
     } catch (error) {
       showError('Network Error', 'Unable to update announcement');
     }
@@ -117,19 +83,10 @@ const AnnouncementsManager: React.FC = () => {
     if (!confirm('Are you sure you want to delete this announcement?')) return;
 
     try {
-      const response = await fetch(
-        `${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}/${id}?admin_key=${adminKey}`,
-        {
-          method: 'DELETE',
-        }
-      );
+      await apiService.delete(`${API_ENDPOINTS.ADMIN_ANNOUNCEMENTS}/${id}`);
 
-      if (response.ok) {
-        showSuccess('Success', 'Announcement deleted successfully');
-        await fetchAnnouncements();
-      } else {
-        showError('Delete Failed', 'Unable to delete announcement');
-      }
+      showSuccess('Success', 'Announcement deleted successfully');
+      await fetchAnnouncements();
     } catch (error) {
       showError('Network Error', 'Unable to delete announcement');
     }
