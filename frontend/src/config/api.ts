@@ -16,8 +16,8 @@ export const API_ENDPOINTS = {
   PUBLIC_ANNOUNCEMENTS: `${API_BASE_URL}/admin/public/announcements`,
   
   
-  USER_REQUESTS: `${API_BASE_URL}/user-requests`,
-  UPDATE_USER_PROFILE: `${API_BASE_URL}/update-user-profile`,
+  USER_REQUESTS: `${API_BASE_URL}/prod/get_user_requests`,
+  UPDATE_USER_PROFILE: `${API_BASE_URL}/prod/update_user_profile`,
   
   POSTS: `${API_BASE_URL}/prod/get_posts`,
   SUBMIT_REQUEST: `${API_BASE_URL}/prod/submit_request`,
