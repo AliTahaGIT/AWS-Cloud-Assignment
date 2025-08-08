@@ -19,7 +19,7 @@ dynamodb = boto3.resource("dynamodb")
 posts_table = dynamodb.Table("Posts")
 
 
-@app.put("/update-post/{post_id}")
+@app.put("/prod/update_post/{post_id}")
 def update_post(post_id: str = Path(...), payload: dict = Body(...)):
     try:
         title = payload.get("Post_Title")

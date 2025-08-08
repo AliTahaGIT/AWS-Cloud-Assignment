@@ -20,7 +20,7 @@ dynamodb = boto3.resource("dynamodb")
 s3 = boto3.client("s3")
 
 posts_table = dynamodb.Table("Posts")
-BUCKET = "cloud60"
+BUCKET = "g60project"
 
 @app.post("/prod/create_post")
 async def create_post(
