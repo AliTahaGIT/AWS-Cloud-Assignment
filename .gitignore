@@ -332,3 +332,51 @@ sketch
 
 
 # End of https://www.toptal.com/developers/gitignore/api/python,pycharm+all,webstorm+all,react
+
+# Lambda Package Files
+# Ignore package directories in Lambda functions
+**/package/
+**/deployment.zip
+**/deployment_package/
+**/Archive.zip
+**/response.json
+**/test*.json
+
+# Lambda specific ignores for tp070572_lambda
+LAMBDA\ BACKEND/tp070572_lambda/*/package/
+LAMBDA\ BACKEND/tp070572_lambda/*/deployment.zip
+LAMBDA\ BACKEND/tp070572_lambda/*/Archive.zip
+LAMBDA\ BACKEND/tp070572_lambda/*/*.zip
+LAMBDA\ BACKEND/tp070572_lambda/*/response.json
+
+# Lambda backup files
+**/main_backup*.py
+**/main_v*.py
+
+# Lambda dependency directories (if installed in root)
+LAMBDA\ BACKEND/*/anyio/
+LAMBDA\ BACKEND/*/boto3/
+LAMBDA\ BACKEND/*/botocore/
+LAMBDA\ BACKEND/*/click/
+LAMBDA\ BACKEND/*/dateutil/
+LAMBDA\ BACKEND/*/fastapi/
+LAMBDA\ BACKEND/*/h11/
+LAMBDA\ BACKEND/*/idna/
+LAMBDA\ BACKEND/*/jmespath/
+LAMBDA\ BACKEND/*/mangum/
+LAMBDA\ BACKEND/*/pydantic/
+LAMBDA\ BACKEND/*/s3transfer/
+LAMBDA\ BACKEND/*/six.py
+LAMBDA\ BACKEND/*/sniffio/
+LAMBDA\ BACKEND/*/starlette/
+LAMBDA\ BACKEND/*/typing_extensions.py
+LAMBDA\ BACKEND/*/urllib3/
+LAMBDA\ BACKEND/*/uvicorn/
+LAMBDA\ BACKEND/*/werkzeug/
+LAMBDA\ BACKEND/*/*-dist-info/
+LAMBDA\ BACKEND/*/bin/
+
+# AWS Lambda Layer packages
+layer/
+layers/
+python/
