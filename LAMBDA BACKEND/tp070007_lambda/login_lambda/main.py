@@ -6,7 +6,7 @@ from werkzeug.security import check_password_hash
 app = FastAPI()
 
 dynamodb = boto3.resource("dynamodb")
-users_table = dynamodb.Table("Users")  # Replace with your actual table name
+users_table = dynamodb.Table("Users") 
 
 @app.post("/prod/login")
 def login_user(

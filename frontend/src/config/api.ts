@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/prod/login`,
   REGISTER: `${API_BASE_URL}/prod/register`,
   
+<<<<<<< HEAD
   ADMIN_LOGIN: `${API_BASE_URL}/prod/admin/login`,
   ADMIN_DASHBOARD: `${API_BASE_URL}/prod/admin/dashboard/stats`,
   ADMIN_USERS: `${API_BASE_URL}/prod/admin/users`,
@@ -14,10 +15,20 @@ export const API_ENDPOINTS = {
   ADMIN_ANNOUNCEMENTS: `${API_BASE_URL}/prod/admin/announcements`,
   PUBLIC_NOTIFICATIONS: `${API_BASE_URL}/prod/notifications`,
   PUBLIC_ANNOUNCEMENTS: `${API_BASE_URL}/prod/public/announcements`,
+=======
+  ADMIN_LOGIN: `${API_BASE_URL}/prod/admin/admin-login`,
+  ADMIN_DASHBOARD: `${API_BASE_URL}/prod/admin/dashboard/stats`,
+  ADMIN_USERS: `${API_BASE_URL}/prod/admin/users/all`,
+  ADMIN_REQUESTS: `${API_BASE_URL}/prod/admin/requests/all`,
+  ADMIN_NOTIFICATIONS: `${API_BASE_URL}/prod/admin/notifications`,
+  ADMIN_ANNOUNCEMENTS: `${API_BASE_URL}/prod/admin/announcements`,
+  PUBLIC_NOTIFICATIONS: `${API_BASE_URL}/prod/admin/public/notifications`,
+  PUBLIC_ANNOUNCEMENTS: `${API_BASE_URL}/prod/admin/public/announcements`,
+>>>>>>> 1bc277042873d0bc59ab6d364b714c3d1f75fd40
   
   
-  USER_REQUESTS: `${API_BASE_URL}/user-requests`,
-  UPDATE_USER_PROFILE: `${API_BASE_URL}/update-user-profile`,
+  USER_REQUESTS: `${API_BASE_URL}/prod/get_user_requests`,
+  UPDATE_USER_PROFILE: `${API_BASE_URL}/prod/update_user_profile`,
   
   POSTS: `${API_BASE_URL}/prod/get_posts`,
   SUBMIT_REQUEST: `${API_BASE_URL}/prod/submit_request`,
