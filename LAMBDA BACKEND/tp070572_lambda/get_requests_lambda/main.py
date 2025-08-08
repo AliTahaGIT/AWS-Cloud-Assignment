@@ -1,8 +1,11 @@
 import boto3
 import json
-from fastapi import FastAPI, HTTPException, Query
+
+from jwt_utils import verify_admin_token
+from fastapi import FastAPI, HTTPException, Query, Depends
 from mangum import Mangum
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Attr
 
 app = FastAPI()
 
@@ -28,21 +31,23 @@ def ensure_table_exists():
 ensure_table_exists()
 requests_table = dynamodb.Table("Requests")
 
-def verify_admin(admin_key: str):
-    if not admin_key:
-        raise HTTPException(status_code=403, detail="Admin key required")
-    return True
-
 @app.get("/prod/admin/requests")
 async def get_all_requests(
     status: str = Query(None),
-    admin_key: str = Query(...)
+    priority: str = Query(None),
+    _: dict = Depends(verify_admin_token)
 ):
-    verify_admin(admin_key)
+    filter_expression = None
     
-    if status:
-        from boto3.dynamodb.conditions import Attr
-        response = requests_table.scan(FilterExpression=Attr('status').eq(status))
+    if status and priority:
+        filter_expression = Attr('status').eq(status) & Attr('priority').eq(priority)
+    elif status:
+        filter_expression = Attr('status').eq(status)
+    elif priority:
+        filter_expression = Attr('priority').eq(priority)
+    
+    if filter_expression:
+        response = requests_table.scan(FilterExpression=filter_expression)
     else:
         response = requests_table.scan()
     
@@ -52,17 +57,5 @@ async def get_all_requests(
     return {"count": len(requests), "requests": requests}
 
 def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
-    
-    if "requestContext" in event:
-        if "http" not in event["requestContext"]:
-            event["requestContext"]["http"] = {}
-        if "sourceIp" not in event["requestContext"]["http"]:
-            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
-    
-    mangum_handler = Mangum(app, lifespan="off")
-    response = mangum_handler(event, context)
-    
-    print(f"Returning response: {json.dumps(response)}")
-    
-    return response
+    mangum_handler = Mangum(app)
+    return mangum_handler(event, context)

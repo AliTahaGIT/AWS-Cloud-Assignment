@@ -1,8 +1,11 @@
 import boto3
 import json
-from fastapi import FastAPI, HTTPException, Query
+
+from jwt_utils import verify_admin_token
+from fastapi import FastAPI, HTTPException, Query, Depends
 from mangum import Mangum
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Attr
 
 app = FastAPI()
 
@@ -22,17 +25,18 @@ def ensure_table_exists():
 ensure_table_exists()
 users_table = dynamodb.Table("Users")
 
-def verify_admin(admin_key: str):
-    if not admin_key:
-        raise HTTPException(status_code=403, detail="Admin key required")
-    return True
-
 @app.get("/prod/admin/users")
-async def get_all_users(admin_key: str = Query(...)):
-    verify_admin(admin_key)
+async def get_all_users(
+    role: str = Query(None),
+    _: dict = Depends(verify_admin_token)
+):
     
     try:
-        response = users_table.scan()
+        if role:
+            response = users_table.scan(FilterExpression=Attr('role').eq(role))
+        else:
+            response = users_table.scan()
+        
         users = response.get("Items", [])
         
         # Remove passwords from response
@@ -44,17 +48,5 @@ async def get_all_users(admin_key: str = Query(...)):
         return {"count": 0, "users": [], "error": str(e)}
 
 def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
-    
-    if "requestContext" in event:
-        if "http" not in event["requestContext"]:
-            event["requestContext"]["http"] = {}
-        if "sourceIp" not in event["requestContext"]["http"]:
-            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
-    
-    mangum_handler = Mangum(app, lifespan="off")
-    response = mangum_handler(event, context)
-    
-    print(f"Returning response: {json.dumps(response)}")
-    
-    return response
+    mangum_handler = Mangum(app)
+    return mangum_handler(event, context)

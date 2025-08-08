@@ -1,10 +1,11 @@
 import boto3
 import json
 import uuid
+
+from jwt_utils import verify_admin_token
 from datetime import datetime
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body, Depends
 from mangum import Mangum
-from pydantic import BaseModel
 from werkzeug.security import generate_password_hash
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
@@ -71,63 +72,41 @@ def ensure_table_exists():
 ensure_table_exists()
 users_table = dynamodb.Table("Users")
 
-class AdminCreate(BaseModel):
-    username: str
-    password: str
-    email: str
-    full_name: str
-    master_admin_key: str
-
-def verify_master_admin(key: str):
-    # In production, verify against a secure master key
-    if key != "MASTER_ADMIN_KEY_2024":
-        raise HTTPException(status_code=403, detail="Invalid master admin key")
-    return True
-
 @app.post("/prod/admin/create")
-async def create_admin_user(admin_data: AdminCreate):
-    verify_master_admin(admin_data.master_admin_key)
+async def create_admin_user(
+    admin_data: dict = Body(...),
+    _: dict = Depends(verify_admin_token)
+):
     
-    # Check if username already exists
-    response = users_table.scan(
-        FilterExpression=Attr('username').eq(admin_data.username)
+    required_fields = ["username", "email", "password"]
+    for field in required_fields:
+        if field not in admin_data:
+            raise HTTPException(status_code=400, detail=f"Missing field: {field}")
+    
+    if len(admin_data["password"]) < 8:
+        raise HTTPException(status_code=400, detail="Password too short")
+    
+    existing_check = users_table.scan(
+        FilterExpression=Attr('username').eq(admin_data["username"]) | Attr('email').eq(admin_data["email"])
     )
     
-    if response.get("Items"):
-        raise HTTPException(status_code=400, detail="Username already exists")
+    if existing_check.get("Items"):
+        raise HTTPException(status_code=400, detail="User already exists")
     
-    # Create new admin user
-    new_admin = {
-        "user_id": str(uuid.uuid4()),
-        "username": admin_data.username,
-        "password": generate_password_hash(admin_data.password),
-        "email": admin_data.email,
-        "full_name": admin_data.full_name,
-        "isAdmin": True,
+    admin_id = str(uuid.uuid4())
+    admin_item = {
+        "user_id": admin_id,
+        "username": admin_data["username"],
+        "email": admin_data["email"],
+        "password": generate_password_hash(admin_data["password"]),
         "role": "admin",
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat()
+        "isAdmin": True,
+        "S3_URL": None,
+        "S3_Key": None
     }
-    
-    users_table.put_item(Item=new_admin)
-    
-    # Don't return password hash
-    new_admin.pop("password")
-    
-    return {"message": "Admin user created successfully", "admin": new_admin}
+    users_table.put_item(Item=admin_item)
+    return {"admin_id": admin_id, "username": admin_data["username"]}
 
 def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
-    
-    if "requestContext" in event:
-        if "http" not in event["requestContext"]:
-            event["requestContext"]["http"] = {}
-        if "sourceIp" not in event["requestContext"]["http"]:
-            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
-    
-    mangum_handler = Mangum(app, lifespan="off")
-    response = mangum_handler(event, context)
-    
-    print(f"Returning response: {json.dumps(response)}")
-    
-    return response
+    mangum_handler = Mangum(app)
+    return mangum_handler(event, context)

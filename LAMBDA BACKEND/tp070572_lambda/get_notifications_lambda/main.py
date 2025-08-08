@@ -1,6 +1,8 @@
 import boto3
 import json
-from fastapi import FastAPI, HTTPException, Query
+
+from jwt_utils import verify_admin_token
+from fastapi import FastAPI, HTTPException, Query, Depends
 from mangum import Mangum
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
@@ -34,11 +36,6 @@ def ensure_table_exists():
 ensure_table_exists()
 notifications_table = dynamodb.Table("Notifications")
 
-def verify_admin(admin_key: str):
-    if not admin_key:
-        raise HTTPException(status_code=403, detail="Admin key required")
-    return True
-
 # Routes with /prod prefix for API Gateway
 @app.get("/prod/test_notifications")
 async def test_route():
@@ -56,9 +53,8 @@ async def get_notifications_simple():
 @app.get("/prod/admin/notifications")
 async def get_flood_notifications(
     active_only: bool = Query(False),
-    admin_key: str = Query(...)
+    _: dict = Depends(verify_admin_token)
 ):
-    verify_admin(admin_key)
     
     if active_only:
         response = notifications_table.scan(FilterExpression=Attr('is_active').eq(True))

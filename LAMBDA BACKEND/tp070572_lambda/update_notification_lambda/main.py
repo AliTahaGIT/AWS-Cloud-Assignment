@@ -1,9 +1,10 @@
 import boto3
 import json
+
+from jwt_utils import verify_admin_token
 from datetime import datetime
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Path, Body, Depends
 from mangum import Mangum
-from pydantic import BaseModel
 from typing import List, Optional
 from botocore.exceptions import ClientError
 
@@ -31,52 +32,27 @@ def ensure_table_exists():
 ensure_table_exists()
 notifications_table = dynamodb.Table("Notifications")
 
-class NotificationUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    severity: Optional[str] = None
-    affected_regions: Optional[List[str]] = None
-    is_active: Optional[bool] = None
-    admin_key: str
-
-def verify_admin(admin_key: str):
-    if not admin_key:
-        raise HTTPException(status_code=403, detail="Admin key required")
-    return True
 
 @app.put("/prod/admin/notifications/{notification_id}")
-async def update_notification(notification_id: str, notification: NotificationUpdate):
-    verify_admin(notification.admin_key)
-    
-    response = notifications_table.get_item(Key={"id": notification_id})
+async def update_notification(
+    notification_id: str = Path(...),
+    update_data: dict = Body(...),
+    _: dict = Depends(verify_admin_token)
+):
+    response = notifications_table.get_item(Key={"notification_id": notification_id})
     if "Item" not in response:
         raise HTTPException(status_code=404, detail="Notification not found")
     
-    update_expression = "SET updated_at = :updated_at"
-    expression_values = {":updated_at": datetime.utcnow().isoformat()}
+    update_expression = "SET updated_at = :timestamp"
+    expression_values = {":timestamp": datetime.utcnow().isoformat()}
     
-    if notification.title:
-        update_expression += ", title = :title"
-        expression_values[":title"] = notification.title
-    
-    if notification.description:
-        update_expression += ", description = :description"
-        expression_values[":description"] = notification.description
-    
-    if notification.severity:
-        update_expression += ", severity = :severity"
-        expression_values[":severity"] = notification.severity
-    
-    if notification.affected_regions is not None:
-        update_expression += ", affected_regions = :regions"
-        expression_values[":regions"] = notification.affected_regions
-    
-    if notification.is_active is not None:
-        update_expression += ", is_active = :active"
-        expression_values[":active"] = notification.is_active
+    for field in ["title", "message", "severity", "affected_regions", "is_active"]:
+        if field in update_data:
+            update_expression += f", {field} = :{field}"
+            expression_values[f":{field}"] = update_data[field]
     
     notifications_table.update_item(
-        Key={"id": notification_id},
+        Key={"notification_id": notification_id},
         UpdateExpression=update_expression,
         ExpressionAttributeValues=expression_values
     )

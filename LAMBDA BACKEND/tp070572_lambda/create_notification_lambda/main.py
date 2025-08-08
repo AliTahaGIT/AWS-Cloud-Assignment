@@ -1,10 +1,11 @@
 import boto3
 import json
 import uuid
+
+from jwt_utils import verify_admin_token
 from datetime import datetime
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body, Depends
 from mangum import Mangum
-from pydantic import BaseModel
 from typing import List, Optional
 from botocore.exceptions import ClientError
 
@@ -32,50 +33,30 @@ def ensure_table_exists():
 ensure_table_exists()
 notifications_table = dynamodb.Table("Notifications")
 
-class NotificationCreate(BaseModel):
-    title: str
-    description: str
-    severity: str
-    affected_regions: List[str]
-    is_active: bool = True
-    admin_key: str
-
-def verify_admin(admin_key: str):
-    if not admin_key:
-        raise HTTPException(status_code=403, detail="Admin key required")
-    return True
-
 @app.post("/prod/admin/notifications")
-async def create_notification(notification: NotificationCreate):
-    verify_admin(notification.admin_key)
+async def create_flood_notification(
+    notification: dict = Body(...),
+    _: dict = Depends(verify_admin_token)
+):
     
-    new_notification = {
-        "id": str(uuid.uuid4()),
-        "title": notification.title,
-        "description": notification.description,
-        "severity": notification.severity,
-        "affected_regions": notification.affected_regions,
-        "is_active": notification.is_active,
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat()
+    notification_id = str(uuid.uuid4())
+    timestamp = datetime.utcnow().isoformat()
+    
+    item = {
+        "id": notification_id,
+        "notification_id": notification_id,
+        "title": notification.get("title"),
+        "message": notification.get("message"),
+        "severity": notification.get("severity"),
+        "affected_regions": notification.get("affected_regions", []),
+        "is_active": notification.get("is_active", True),
+        "created_at": timestamp,
+        "updated_at": timestamp
     }
     
-    notifications_table.put_item(Item=new_notification)
-    
-    return {"message": "Notification created", "notification": new_notification}
+    notifications_table.put_item(Item=item)
+    return {"notification_id": notification_id, "data": item}
 
 def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
-    
-    if "requestContext" in event:
-        if "http" not in event["requestContext"]:
-            event["requestContext"]["http"] = {}
-        if "sourceIp" not in event["requestContext"]["http"]:
-            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
-    
-    mangum_handler = Mangum(app, lifespan="off")
-    response = mangum_handler(event, context)
-    
-    print(f"Returning response: {json.dumps(response)}")
-    
-    return response
+    mangum_handler = Mangum(app)
+    return mangum_handler(event, context)

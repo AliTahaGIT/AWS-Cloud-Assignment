@@ -1,9 +1,10 @@
 import boto3
 import json
+
+from jwt_utils import verify_admin_token
 from datetime import datetime
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Path, Body, Depends
 from mangum import Mangum
-from pydantic import BaseModel
 from botocore.exceptions import ClientError
 
 app = FastAPI()
@@ -30,56 +31,49 @@ def ensure_table_exists():
 ensure_table_exists()
 requests_table = dynamodb.Table("Requests")
 
-class StatusUpdate(BaseModel):
-    status: str
-    admin_notes: str = None
-    admin_key: str
-
-def verify_admin(admin_key: str):
-    if not admin_key:
-        raise HTTPException(status_code=403, detail="Admin key required")
-    return True
-
-@app.put("/prod/admin/requests/{request_id}/status")
-async def update_request_status(request_id: str, update: StatusUpdate):
-    verify_admin(update.admin_key)
-    
+@app.put("/prod/admin/requests/{request_id}")
+async def update_request_status(
+    request_id: str = Path(...),
+    update_data: dict = Body(...),
+    _: dict = Depends(verify_admin_token)
+):
     response = requests_table.get_item(Key={"id": request_id})
     if "Item" not in response:
         raise HTTPException(status_code=404, detail="Request not found")
     
-    update_expression = "SET #status = :status, updated_at = :updated_at"
-    expression_names = {"#status": "status"}
-    expression_values = {
-        ":status": update.status,
-        ":updated_at": datetime.utcnow().isoformat()
-    }
+    update_expression = "SET updated_at = :timestamp"
+    expression_names = {}
+    expression_values = {":timestamp": datetime.utcnow().isoformat()}
     
-    if update.admin_notes:
+    if "status" in update_data:
+        update_expression += ", #status = :status"
+        expression_names["#status"] = "status"
+        expression_values[":status"] = update_data["status"]
+    
+    if "assigned_to" in update_data:
+        update_expression += ", assigned_to = :assigned"
+        expression_values[":assigned"] = update_data["assigned_to"]
+    
+    if "admin_notes" in update_data:
         update_expression += ", admin_notes = :notes"
-        expression_values[":notes"] = update.admin_notes
+        expression_values[":notes"] = update_data["admin_notes"]
     
-    requests_table.update_item(
-        Key={"id": request_id},
-        UpdateExpression=update_expression,
-        ExpressionAttributeNames=expression_names,
-        ExpressionAttributeValues=expression_values
-    )
+    if expression_names:
+        requests_table.update_item(
+            Key={"id": request_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeNames=expression_names,
+            ExpressionAttributeValues=expression_values
+        )
+    else:
+        requests_table.update_item(
+            Key={"id": request_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_values
+        )
     
-    return {"message": "Request status updated", "id": request_id, "new_status": update.status}
+    return {"success": True, "id": request_id}
 
 def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
-    
-    if "requestContext" in event:
-        if "http" not in event["requestContext"]:
-            event["requestContext"]["http"] = {}
-        if "sourceIp" not in event["requestContext"]["http"]:
-            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
-    
-    mangum_handler = Mangum(app, lifespan="off")
-    response = mangum_handler(event, context)
-    
-    print(f"Returning response: {json.dumps(response)}")
-    
-    return response
+    mangum_handler = Mangum(app)
+    return mangum_handler(event, context)

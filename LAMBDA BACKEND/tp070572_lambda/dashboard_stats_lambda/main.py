@@ -1,6 +1,8 @@
 import boto3
 import json
-from fastapi import FastAPI, HTTPException, Query
+
+from jwt_utils import verify_admin_token
+from fastapi import FastAPI, HTTPException, Depends
 from mangum import Mangum
 from datetime import datetime, timedelta
 from boto3.dynamodb.conditions import Attr
@@ -51,14 +53,8 @@ def ensure_tables_exist():
 
 ensure_tables_exist()
 
-def verify_admin(admin_key: str):
-    if not admin_key:
-        raise HTTPException(status_code=403, detail="Admin key required")
-    return True
-
 @app.get("/prod/admin/dashboard/stats")
-async def get_dashboard_stats(admin_key: str = Query(...)):
-    verify_admin(admin_key)
+async def get_dashboard_stats(_: dict = Depends(verify_admin_token)):
     
     stats = {}
     
@@ -123,17 +119,5 @@ async def get_dashboard_stats(admin_key: str = Query(...)):
         }
 
 def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
-    
-    if "requestContext" in event:
-        if "http" not in event["requestContext"]:
-            event["requestContext"]["http"] = {}
-        if "sourceIp" not in event["requestContext"]["http"]:
-            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
-    
-    mangum_handler = Mangum(app, lifespan="off")
-    response = mangum_handler(event, context)
-    
-    print(f"Returning response: {json.dumps(response)}")
-    
-    return response
+    mangum_handler = Mangum(app)
+    return mangum_handler(event, context)

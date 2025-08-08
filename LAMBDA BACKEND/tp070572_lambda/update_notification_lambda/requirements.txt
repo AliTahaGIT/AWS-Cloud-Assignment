@@ -1,6 +1,6 @@
+boto3
+exceptiongroup
 fastapi==0.99.0
 mangum
-boto3
+PyJWT
 uvicorn
-PyJWT
-PyJWT

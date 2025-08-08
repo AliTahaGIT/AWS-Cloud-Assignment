@@ -1,10 +1,12 @@
 import boto3
 import json
 import uuid
+
+from jwt_utils import verify_admin_token
 from datetime import datetime
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Path, Body, Depends
 from mangum import Mangum
-from pydantic import BaseModel
+from typing import Optional
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 
@@ -32,65 +34,83 @@ def ensure_table_exists():
 ensure_table_exists()
 announcements_table = dynamodb.Table("Announcements")
 
-class AnnouncementCreate(BaseModel):
-    title: str
-    content: str
-    priority: str = "normal"
-    is_active: bool = True
-    admin_key: str
+@app.get("/prod/public/announcements")
+async def get_public_announcements():
+    response = announcements_table.scan(FilterExpression=Attr('is_active').eq(True))
+    announcements = response.get("Items", [])
+    announcements.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    return {"count": len(announcements), "announcements": announcements}
 
-def verify_admin(admin_key: str):
-    if not admin_key:
-        raise HTTPException(status_code=403, detail="Admin key required")
-    return True
-
-@app.get("/prod/announcements")
+@app.get("/prod/admin/announcements")
 async def get_announcements(
-    active_only: bool = Query(True)
+    active_only: bool = Query(True),
+    _: dict = Depends(verify_admin_token)
 ):
-    try:
-        if active_only:
-            response = announcements_table.scan(FilterExpression=Attr('is_active').eq(True))
-        else:
-            response = announcements_table.scan()
-        
-        announcements = response.get("Items", [])
-        announcements.sort(key=lambda x: x.get('created_at', ''), reverse=True)
-        
-        return {"count": len(announcements), "announcements": announcements}
-    except Exception as e:
-        return {"count": 0, "announcements": [], "error": str(e)}
+    if active_only:
+        response = announcements_table.scan(FilterExpression=Attr('is_active').eq(True))
+    else:
+        response = announcements_table.scan()
+    
+    announcements = response.get("Items", [])
+    announcements.sort(key=lambda x: x.get('created_at', ''), reverse=True)
+    
+    return {"count": len(announcements), "announcements": announcements}
 
 @app.post("/prod/admin/announcements")
-async def create_announcement(announcement: AnnouncementCreate):
-    verify_admin(announcement.admin_key)
+async def create_announcement(
+    announcement_data: dict = Body(...),
+    _: dict = Depends(verify_admin_token)
+):
+    announcement_id = str(uuid.uuid4())
+    timestamp = datetime.utcnow().isoformat()
     
-    new_announcement = {
-        "id": str(uuid.uuid4()),
-        "title": announcement.title,
-        "content": announcement.content,
-        "priority": announcement.priority,
-        "is_active": announcement.is_active,
-        "created_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat()
+    item = {
+        "id": announcement_id,
+        "announcement_id": announcement_id,
+        "title": announcement_data.get("title"),
+        "content": announcement_data.get("content"),
+        "is_active": announcement_data.get("is_active", True),
+        "created_at": timestamp,
+        "updated_at": timestamp
     }
     
-    announcements_table.put_item(Item=new_announcement)
+    announcements_table.put_item(Item=item)
+    return {"announcement_id": announcement_id, "data": item}
+
+@app.put("/prod/admin/announcements/{announcement_id}")
+async def update_announcement(
+    announcement_id: str = Path(...),
+    update_data: dict = Body(...),
+    _: dict = Depends(verify_admin_token)
+):
+    response = announcements_table.get_item(Key={"id": announcement_id})
+    if "Item" not in response:
+        raise HTTPException(status_code=404, detail="Announcement not found")
     
-    return {"message": "Announcement created", "announcement": new_announcement}
+    update_expression = "SET updated_at = :timestamp"
+    expression_values = {":timestamp": datetime.utcnow().isoformat()}
+    
+    for field in ["title", "content", "is_active"]:
+        if field in update_data:
+            update_expression += f", {field} = :{field}"
+            expression_values[f":{field}"] = update_data[field]
+    
+    announcements_table.update_item(
+        Key={"id": announcement_id},
+        UpdateExpression=update_expression,
+        ExpressionAttributeValues=expression_values
+    )
+    
+    return {"success": True}
+
+@app.delete("/prod/admin/announcements/{announcement_id}")
+async def delete_announcement(
+    announcement_id: str = Path(...),
+    _: dict = Depends(verify_admin_token)
+):
+    announcements_table.delete_item(Key={"id": announcement_id})
+    return {"success": True}
 
 def handler(event, context):
-    print(f"Received event: {json.dumps(event)}")
-    
-    if "requestContext" in event:
-        if "http" not in event["requestContext"]:
-            event["requestContext"]["http"] = {}
-        if "sourceIp" not in event["requestContext"]["http"]:
-            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
-    
-    mangum_handler = Mangum(app, lifespan="off")
-    response = mangum_handler(event, context)
-    
-    print(f"Returning response: {json.dumps(response)}")
-    
-    return response
+    mangum_handler = Mangum(app)
+    return mangum_handler(event, context)
