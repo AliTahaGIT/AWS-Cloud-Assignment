@@ -1,8 +1,17 @@
 import boto3
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 dynamodb = boto3.resource("dynamodb")
 requests_table = dynamodb.Table("Requests")  
 

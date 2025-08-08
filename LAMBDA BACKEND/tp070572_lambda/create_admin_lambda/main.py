@@ -5,12 +5,21 @@ import uuid
 from jwt_utils import verify_admin_token
 from datetime import datetime
 from fastapi import FastAPI, HTTPException, Body, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from werkzeug.security import generate_password_hash
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 dynamodb = boto3.resource("dynamodb")
 dynamodb_client = boto3.client("dynamodb")

@@ -4,12 +4,21 @@ import jwt
 import os
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Body
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from werkzeug.security import check_password_hash
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # JWT configuration
 JWT_SECRET = os.environ.get("JWT_SECRET", "your-secret-key-change-in-production")

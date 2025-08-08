@@ -1,9 +1,18 @@
 import boto3
 from fastapi import FastAPI, HTTPException, Path, Body, Query
+from fastapi.middleware.cors import CORSMiddleware
 from mangum import Mangum
 from werkzeug.security import generate_password_hash
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 dynamodb = boto3.resource("dynamodb")
 users_table = dynamodb.Table("Users")
