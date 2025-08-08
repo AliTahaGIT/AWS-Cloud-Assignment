@@ -3,3 +3,4 @@ mangum
 boto3
 uvicorn
 werkzeug
+PyJWT

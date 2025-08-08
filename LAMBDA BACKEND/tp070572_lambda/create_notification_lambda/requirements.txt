@@ -2,3 +2,5 @@ fastapi==0.99.0
 mangum
 boto3
 uvicorn
+PyJWT
+PyJWT

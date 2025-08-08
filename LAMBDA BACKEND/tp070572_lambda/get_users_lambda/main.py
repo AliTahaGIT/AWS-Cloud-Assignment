@@ -1,11 +1,25 @@
 import boto3
+import json
 from fastapi import FastAPI, HTTPException, Query
 from mangum import Mangum
-from boto3.dynamodb.conditions import Attr
+from botocore.exceptions import ClientError
 
 app = FastAPI()
 
 dynamodb = boto3.resource("dynamodb")
+dynamodb_client = boto3.client("dynamodb")
+
+def ensure_table_exists():
+    """Check if Users table exists"""
+    table_name = "Users"
+    try:
+        dynamodb_client.describe_table(TableName=table_name)
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            print(f"Table {table_name} does not exist")
+            # Don't create it here - let registration endpoint handle it
+
+ensure_table_exists()
 users_table = dynamodb.Table("Users")
 
 def verify_admin(admin_key: str):
@@ -14,38 +28,33 @@ def verify_admin(admin_key: str):
     return True
 
 @app.get("/prod/admin/users")
-async def get_all_users(
-    search: str = Query(None),
-    role: str = Query(None),
-    limit: int = Query(100),
-    admin_key: str = Query(...)
-):
+async def get_all_users(admin_key: str = Query(...)):
     verify_admin(admin_key)
     
-    scan_params = {"Limit": limit}
-    if role:
-        scan_params["FilterExpression"] = Attr('role').eq(role)
-    
-    response = users_table.scan(**scan_params)
-    users = response.get("Items", [])
-    
-    if search:
-        search_lower = search.lower()
-        users = [
-            u for u in users 
-            if (search_lower in u.get('full_name', '').lower() or 
-                search_lower in u.get('email', '').lower() or 
-                search_lower in u.get('username', '').lower())
-        ]
-    
-    for user in users:
-        user.pop('password_hash', None)
-        user.pop('password', None)
-    
-    users.sort(key=lambda x: x.get('created_at', ''), reverse=True)
-    
-    return {"count": len(users), "users": users}
+    try:
+        response = users_table.scan()
+        users = response.get("Items", [])
+        
+        # Remove passwords from response
+        for user in users:
+            user.pop("password", None)
+        
+        return {"count": len(users), "users": users}
+    except Exception as e:
+        return {"count": 0, "users": [], "error": str(e)}
 
 def handler(event, context):
-    mangum_handler = Mangum(app)
-    return mangum_handler(event, context)
+    print(f"Received event: {json.dumps(event)}")
+    
+    if "requestContext" in event:
+        if "http" not in event["requestContext"]:
+            event["requestContext"]["http"] = {}
+        if "sourceIp" not in event["requestContext"]["http"]:
+            event["requestContext"]["http"]["sourceIp"] = "127.0.0.1"
+    
+    mangum_handler = Mangum(app, lifespan="off")
+    response = mangum_handler(event, context)
+    
+    print(f"Returning response: {json.dumps(response)}")
+    
+    return response

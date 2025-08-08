@@ -1,24 +1,59 @@
 import boto3
 import json
-import secrets
+import jwt
+import os
 from datetime import datetime, timedelta
 from fastapi import FastAPI, HTTPException, Body
 from mangum import Mangum
 from werkzeug.security import check_password_hash
+from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
 
 app = FastAPI()
 
+# JWT configuration
+JWT_SECRET = os.environ.get("JWT_SECRET", "your-secret-key-change-in-production")
+JWT_ALGORITHM = "HS256"
+JWT_EXPIRATION_HOURS = 24
+
 dynamodb = boto3.resource("dynamodb")
-users_table = dynamodb.Table("Users")
+dynamodb_client = boto3.client("dynamodb")
 
-admin_sessions = {}
+def ensure_table_exists():
+    """Check if Users table exists"""
+    table_name = "Users"
+    try:
+        dynamodb_client.describe_table(TableName=table_name)
+        print(f"Table {table_name} exists")
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            print(f"Table {table_name} does not exist - will be created by registration endpoint")
+            return False
+    return True
 
-def generate_secure_key() -> str:
-    return secrets.token_urlsafe(32)
+if ensure_table_exists():
+    users_table = dynamodb.Table("Users")
+else:
+    users_table = dynamodb.Table("Users")
 
 def verify_password(password: str, hashed: str) -> bool:
-    return check_password_hash(hashed, password)
+    try:
+        return check_password_hash(hashed, password)
+    except:
+        # Fallback for unhashed passwords (development only)
+        return password == hashed
+
+def create_jwt_token(user_data: dict) -> str:
+    """Create a JWT token for the authenticated admin"""
+    payload = {
+        "user_id": user_data["user_id"],
+        "username": user_data["username"],
+        "role": user_data.get("role", "admin"),
+        "isAdmin": user_data.get("isAdmin", True),
+        "exp": datetime.utcnow() + timedelta(hours=JWT_EXPIRATION_HOURS),
+        "iat": datetime.utcnow()
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 @app.post("/prod/admin/login")
 async def admin_login(credentials: dict = Body(...)):
@@ -28,31 +63,38 @@ async def admin_login(credentials: dict = Body(...)):
     if not username or not password:
         raise HTTPException(status_code=400, detail="Username and password required")
     
+    # Query for admin user
     response = users_table.scan(
-        FilterExpression=Attr('username').eq(username) & Attr('role').eq('admin')
+        FilterExpression=Attr('username').eq(username)
     )
-    admin_users = response.get("Items", [])
     
-    if not admin_users or not verify_password(password, admin_users[0].get("password", "")):
+    users = response.get("Items", [])
+    
+    if not users:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    admin_user = admin_users[0]
-    session_key = generate_secure_key()
+    user = users[0]
     
-    session_data = {
-        "admin_id": admin_user["user_id"],
-        "username": admin_user["username"],
-        "created": datetime.utcnow().isoformat(),
-        "expires": (datetime.utcnow() + timedelta(hours=24)).isoformat()
-    }
+    # Check if user is admin (either by role or isAdmin flag)
+    is_admin = user.get("role") == "admin" or user.get("isAdmin", False)
+    if not is_admin:
+        raise HTTPException(status_code=403, detail="Access denied - admin privileges required")
     
-    admin_sessions[session_key] = session_data
+    # Verify password
+    if not verify_password(password, user.get("password", "")):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
     
+    # Create JWT token
+    token = create_jwt_token(user)
+    
+    # Return authentication response
     return {
-        "admin_id": admin_user["user_id"],
-        "admin_key": session_key,
-        "username": admin_user["username"],
-        "session": session_data
+        "success": True,
+        "user_id": user["user_id"],
+        "username": user["username"],
+        "token": token,
+        "expires_in": JWT_EXPIRATION_HOURS * 3600,
+        "token_type": "Bearer"
     }
 
 def handler(event, context):
